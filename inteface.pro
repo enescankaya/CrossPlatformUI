@@ -26,6 +26,7 @@ SOURCES += \
     Models/GlobalParams.cpp \
     Delegate/MapScreen.cpp \
     Delegate/connectionmanager.cpp \
+    Models/MavlinkCommunication.cpp \
     Models/TcpManager.cpp \
     Models/TcpWorker.cpp \
     Models/errormanager.cpp \
@@ -40,6 +41,7 @@ HEADERS += \
     Headers/CameraScreen.h \
     Headers/GlobalParams.h \
     Headers/MapScreen.h \
+    Headers/MavlinkCommunication.h \
     Headers/TcpManager.h \
     Headers/TcpWorker.h \
     Headers/maininterface.h \
@@ -55,7 +57,7 @@ FORMS += \
     Views/maininterface.ui
 
 INCLUDEPATH += $$PWD/Headers
-
+INCLUDEPATH += $$PWD/Library/Mavlink2/common
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

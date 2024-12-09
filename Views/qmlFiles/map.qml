@@ -94,12 +94,12 @@ Rectangle {
         onClicked: function(mouse) {
             if (mouse.button === Qt.RightButton) {
                            const clickedCoord = mapView.toCoordinate(Qt.point(mouse.x, mouse.y))
-                           addRightClickMarker(clickedCoord.latitude, clickedCoord.longitude)
-                            rightClickSignal(clickedCoord.latitude, clickedCoord.longitude)
+                           window.addRightClickMarker(clickedCoord.latitude, clickedCoord.longitude)
+                            window.rightClickSignal(clickedCoord.latitude, clickedCoord.longitude)
                        }
                        if (mouse.button === Qt.MiddleButton) {
-                           removeRightClickMarker()
-                           removerightClickSignal()
+                           window.removeRightClickMarker()
+                           window.removerightClickSignal()
                        }
         }
     }
@@ -116,7 +116,7 @@ Rectangle {
         running: true
 
         onTriggered: {
-            setCenter(window.oldLat, window.oldLng)
+            parent.setCenter(window.oldLat, window.oldLng)
         }
     }
 

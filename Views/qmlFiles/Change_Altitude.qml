@@ -75,7 +75,7 @@ Rectangle {
                     var step = customInput.stepSize * customInput.accelerationMultiplier;
                     var newValue = root.currentAltitude + step;
                     root.currentAltitude = newValue;
-                    altitudeTextInput.text = formatAltitude(root.currentAltitude, Qt.locale());
+                    altitudeTextInput.text = root.formatAltitude(root.currentAltitude, Qt.locale());
                 }
             }
 
@@ -87,7 +87,7 @@ Rectangle {
                     var step = customInput.stepSize * customInput.accelerationMultiplier;
                     var newValue = root.currentAltitude - step;
                     root.currentAltitude = newValue;
-                    altitudeTextInput.text = formatAltitude(root.currentAltitude, Qt.locale());
+                    altitudeTextInput.text = root.formatAltitude(root.currentAltitude, Qt.locale());
                 }
             }
 
@@ -117,9 +117,9 @@ Rectangle {
                     anchors.fill: parent
                     onPressed: {
                         var newValue = root.currentAltitude - customInput.stepSize;
-                        var validatedAltitude = validateAndUpdateAltitude(newValue);
+                        var validatedAltitude = root.validateAndUpdateAltitude(newValue);
                         root.currentAltitude = validatedAltitude;
-                        altitudeTextInput.text = formatAltitude(root.currentAltitude, Qt.locale());
+                        altitudeTextInput.text = root.formatAltitude(root.currentAltitude, Qt.locale());
                         decrementTimer.start();
                     }
                     onReleased: decrementTimer.stop();
@@ -144,10 +144,10 @@ Rectangle {
                 onTextEdited: {
                     var inputValue = parseFloat(text);
                     if (!isNaN(inputValue)) {
-                        var validatedAltitude = validateAndUpdateAltitude(inputValue);
+                        var validatedAltitude = root.validateAndUpdateAltitude(inputValue);
                         root.currentAltitude = validatedAltitude;
                     } else {
-                        altitudeTextInput.text = formatAltitude(root.currentAltitude, Qt.locale());
+                        altitudeTextInput.text = root.formatAltitude(root.currentAltitude, Qt.locale());
                     }
                 }
             }
@@ -179,9 +179,9 @@ Rectangle {
                     anchors.fill: parent
                     onPressed: {
                         var newValue = root.currentAltitude + customInput.stepSize;
-                        var validatedAltitude = validateAndUpdateAltitude(newValue);
+                        var validatedAltitude = root.validateAndUpdateAltitude(newValue);
                         root.currentAltitude = validatedAltitude;
-                        altitudeTextInput.text = formatAltitude(root.currentAltitude, Qt.locale());
+                        altitudeTextInput.text = root.formatAltitude(root.currentAltitude, Qt.locale());
                         incrementTimer.start();
                     }
                     onReleased: incrementTimer.stop();

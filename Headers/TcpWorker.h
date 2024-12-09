@@ -1,5 +1,9 @@
 #ifndef TCPWORKER_H
 #define TCPWORKER_H
+#include "Library/Mavlink2/mavlink_types.h"
+#include <mavlink.h>
+#include <Library/Mavlink2/mavlink_helpers.h>
+#include <Library/Mavlink2/mavlink_conversions.h>
 #include <QObject>
 #include <QTcpSocket>
 #include <QTimer>
@@ -9,6 +13,7 @@ class TcpWorker : public QObject {
 public:
     explicit TcpWorker(QObject *parent = nullptr);
     ~TcpWorker();
+    void ReadData();
 
 public slots:
     void initialize();
@@ -25,6 +30,7 @@ private slots:
     void handleStateChange(QAbstractSocket::SocketState socketState);
     void handleConnectionTimeout();
 
+
 private:
     void cleanup();
     QString getErrorMessage(QAbstractSocket::SocketError socketError);
@@ -35,5 +41,8 @@ private:
     QTimer* connectionTimer{nullptr};  // Şimdi pointer olarak tutuyoruz
     static constexpr int CONNECTION_TIMEOUT = 3000;
     QMutex mutex;
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    mavlink_message_t msg;
+    mavlink_status_t status = {};
 };
 #endif // TCPWORKER_H

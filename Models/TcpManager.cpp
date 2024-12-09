@@ -39,10 +39,15 @@ void TcpManager::cleanupWorker() {
     if (workerThread) {
         workerThread->quit();
         workerThread->wait();
-        delete worker;
-        worker = nullptr;
+        if (worker) {
+            worker->deleteLater(); // Güvenli temizlik
+            worker = nullptr;
+        }
+        delete workerThread; // Thread'i temizleyin
+        workerThread = nullptr;
     }
 }
+
 
 void TcpManager::requestConnection(bool connect, const QString &ip, int port) {
     if (isProcessing.loadAcquire()) {

@@ -70,6 +70,7 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
             mainInterface, SLOT(handleErrorDismissed()));
 
     // Status widgets
+
     auto rootObjectSignal = mainInterface->ui->Signal_Widget->rootObject();
     connect(mainInterface, SIGNAL(setSignalStrength(QVariant)),
             rootObjectSignal, SLOT(setValue(QVariant)));

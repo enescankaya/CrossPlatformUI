@@ -1,3 +1,4 @@
+
 #include "CameraScreen.h"
 #include <QMediaPlayer>
 #include <QGraphicsView>

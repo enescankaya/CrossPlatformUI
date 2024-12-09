@@ -1,5 +1,6 @@
 #include "Headers/TcpWorker.h"
 #include "Headers/GlobalParams.h"
+#include "Library/Mavlink2/mavlink_helpers.h"
 
 TcpWorker::TcpWorker(QObject *parent)
     : QObject(parent) {
@@ -16,6 +17,7 @@ void TcpWorker::initialize() {
                 this, &TcpWorker::handleSocketError);
         connect(tcpSocket, &QTcpSocket::stateChanged,
                 this, &TcpWorker::handleStateChange);
+        connect(tcpSocket, &QTcpSocket::readyRead, this, &TcpWorker::ReadData);
     }
 
     if (!connectionTimer) {
@@ -147,3 +149,20 @@ void TcpWorker::cleanup() {
         handleDisconnect();
     }
 }
+void TcpWorker::ReadData(){
+    while (tcpSocket->bytesAvailable() > 0) {
+        int bytesRead = tcpSocket->read(reinterpret_cast<char*>(buffer), MAVLINK_MAX_PACKET_LEN);
+        if (bytesRead <= 0) {
+            emit showMessage("Error", "Could not Read Data", "", 1500);
+             // Veri okunamadığında hata sinyali gönder
+            return;
+        }
+        for (int i = 0; i < bytesRead; i++) {
+            if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)) {//bir kere okudugunu bir daha okumuyor
+                //processMAVLinkMessage(msg);
+            }
+        }
+    }
+}
+
+

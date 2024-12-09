@@ -123,7 +123,6 @@ Item {
                     font.pixelSize: 10
                     Layout.fillWidth: true
                     elide: Text.ElideRight
-                    wrapMode: Text.WrapAtWordBoundary
                     Layout.alignment:Qt.AlignTop
                 }
             }
