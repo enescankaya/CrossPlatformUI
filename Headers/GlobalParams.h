@@ -21,6 +21,7 @@ public:
     QString TCP_Current_ip;
     bool Mavlink_Available=false;
     bool allPanelsAvailable=true;
+    bool isArmed=false;
 signals:
     void connectionStatusChanged(bool connected);
     void showMessage(const QString& title, const QString& message,

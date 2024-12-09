@@ -573,6 +573,57 @@ QLabel {
              <number>0</number>
             </property>
             <item>
+             <widget class="QPushButton" name="Arm_Button">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>120</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::FocusPolicy::NoFocus</enum>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LayoutDirection::LeftToRight</enum>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">    font.family:&quot;#9A9EB1&quot;    
+    font-size: 12px; /* Yazı boyutu */
+    font-weight: bold; /* Kalın yazı */
+    color: white; /* Yazı rengi */
+    text-align: center; /* Metni ortalamak */
+    padding: 10px; /* Kenar boşlukları */
+    border: none; /* Kenarlık yok */
+background:rgba(0,0,0,0);</string>
+              </property>
+              <property name="text">
+               <string>ARM</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../Resource.qrc">
+                <normaloff>:/Resources/security.png</normaloff>:/Resources/security.png</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>40</width>
+                <height>40</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="Motor_Button">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -620,57 +671,6 @@ background:rgba(0,0,0,0);</string>
                <size>
                 <width>30</width>
                 <height>30</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="Arm_Button">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>80</width>
-                <height>40</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>120</width>
-                <height>40</height>
-               </size>
-              </property>
-              <property name="focusPolicy">
-               <enum>Qt::FocusPolicy::NoFocus</enum>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::LayoutDirection::LeftToRight</enum>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">    font.family:&quot;#9A9EB1&quot;    
-    font-size: 12px; /* Yazı boyutu */
-    font-weight: bold; /* Kalın yazı */
-    color: white; /* Yazı rengi */
-    text-align: center; /* Metni ortalamak */
-    padding: 10px; /* Kenar boşlukları */
-    border: none; /* Kenarlık yok */
-background:rgba(0,0,0,0);</string>
-              </property>
-              <property name="text">
-               <string>ARM</string>
-              </property>
-              <property name="icon">
-               <iconset resource="../Resource.qrc">
-                <normaloff>:/Resources/security.png</normaloff>:/Resources/security.png</iconset>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>40</width>
-                <height>40</height>
                </size>
               </property>
              </widget>
@@ -1335,7 +1335,7 @@ background: &quot;#40000000&quot;
     <widget class="QQuickWidget" name="Arm_Widget">
      <property name="geometry">
       <rect>
-       <x>370</x>
+       <x>280</x>
        <y>80</y>
        <width>150</width>
        <height>100</height>
@@ -1366,7 +1366,7 @@ background: &quot;#40000000&quot;
     <widget class="QQuickWidget" name="Engine_Widget">
      <property name="geometry">
       <rect>
-       <x>280</x>
+       <x>350</x>
        <y>80</y>
        <width>150</width>
        <height>100</height>

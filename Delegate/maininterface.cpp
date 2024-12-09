@@ -5,7 +5,6 @@
 #include <vector>
 #include <functional>
 #include <array>
-auto& globals = GlobalParams::getInstance();
 MainInterface::MainInterface(QWidget *parent)
     : QMainWindow(parent)
     , ui(std::make_unique<Ui::BAYKARHP>())
@@ -21,8 +20,7 @@ MainInterface::MainInterface(QWidget *parent)
     on_uavIcons_Button_clicked();
     on_Swapping_Button_clicked();
     ui->Recording_Label->setVisible(false);
-
-
+    setUI();
 }
 void MainInterface::set_SITL(){
     QString batFilePath ="C:/Users/PC_6270/Desktop/Enes/QtAndroidInterfaceProject/inteface/SITL.bat";
@@ -127,26 +125,26 @@ void MainInterface::handleEngineStateChanged(bool isEngineOn) {
 
 void MainInterface::handleSecurityStateChanged(bool isArmed) {
     uiStateManager->handleSecurityState(isArmed, ui->Arm_Button);
+    GlobalParams::getInstance().isArmed=isArmed;
+    setUI();
 }
 
 void MainInterface::handleConnectionSignal(bool connectionState, const QString &ip, int port) {
-    auto &globals = GlobalParams::getInstance();
     set_SITL();
     // Only proceed if there's an actual state change
-    if (globals.TCP_CONNECTION_STATE != connectionState) {
+    if (GlobalParams::getInstance().TCP_CONNECTION_STATE != connectionState) {
         emit TCP_Connection_State(connectionState, ip, port);
     }
 
     // Update UI only if the desired state was achieved
-    if (globals.TCP_CONNECTION_STATE == connectionState) {
-        setTCPButton(connectionState);
+    if (GlobalParams::getInstance().TCP_CONNECTION_STATE == connectionState) {
         if (connectionState) {
-            globals.TCP_Current_port = port;
-            globals.TCP_Current_ip = ip;
+            GlobalParams::getInstance().TCP_Current_port = port;
+            GlobalParams::getInstance().TCP_Current_ip = ip;
         }
     }
-
-    emit updateConnectionState(globals.TCP_CONNECTION_STATE);
+    setTCPButton(connectionState);
+    emit updateConnectionState(GlobalParams::getInstance().TCP_CONNECTION_STATE);
 }
 void MainInterface::setTCPButton(bool TCP_CONNECTION_STATE){
     uiStateManager->handleConnectionState(TCP_CONNECTION_STATE, ui->Tcp_Button);
@@ -156,12 +154,12 @@ void MainInterface::setTCPButton(bool TCP_CONNECTION_STATE){
 void MainInterface::setUI(){
     widgetManager->closeAllExcept(nullptr);
     widgetManager->setVisibility(ui->ThrottleWidget, ui->main_Frame,
-                                 globals.TCP_CONNECTION_STATE && ui->ThrottleWidget->isVisible());
+                                 GlobalParams::getInstance().TCP_CONNECTION_STATE && ui->ThrottleWidget->isVisible() && GlobalParams::getInstance().isArmed);
     widgetManager->setVisibility(ui->CHANGE_ALTITUDE_WIDGET, ui->main_Frame,
-                                 globals.TCP_CONNECTION_STATE && ui->CHANGE_ALTITUDE_WIDGET->isVisible());
-    ui->Arm_Button->setEnabled(globals.TCP_CONNECTION_STATE);
-    ui->Motor_Button->setEnabled(globals.TCP_CONNECTION_STATE);
-    ui->Mode_Button->setEnabled(globals.TCP_CONNECTION_STATE);
+                                 GlobalParams::getInstance().TCP_CONNECTION_STATE && ui->CHANGE_ALTITUDE_WIDGET->isVisible() && GlobalParams::getInstance().isArmed);
+    ui->Arm_Button->setEnabled(GlobalParams::getInstance().TCP_CONNECTION_STATE);
+    ui->Motor_Button->setEnabled(GlobalParams::getInstance().TCP_CONNECTION_STATE && GlobalParams::getInstance().isArmed);
+    ui->Mode_Button->setEnabled(GlobalParams::getInstance().TCP_CONNECTION_STATE && GlobalParams::getInstance().isArmed);
 }
 void MainInterface::handleAltitudeChanged(int value) {
     qDebug() << "Altitude changed to:" << value;
@@ -169,7 +167,7 @@ void MainInterface::handleAltitudeChanged(int value) {
 
 void MainInterface::handleErrorDismissed() {
     errorManager->handleDismissal();
-    if(!globals.allPanelsAvailable){
+    if(!GlobalParams::getInstance().allPanelsAvailable){
         ui->Errors_Frame->stackUnder(ui->main_Frame);
     }
 }
@@ -285,7 +283,7 @@ void MainInterface::on_zoom_Button_clicked() {
 void MainInterface::showMessage(const QString& title, const QString& message,//burayı düzelt
                                 const QString& color, int duration) {
     errorManager->handleError(title, message, color, duration);
-    if(globals.allPanelsAvailable){
+    if(GlobalParams::getInstance().allPanelsAvailable){
         ui->Errors_Frame->raise();
     }
 }

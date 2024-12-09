@@ -26,7 +26,6 @@ SOURCES += \
     Models/GlobalParams.cpp \
     Delegate/MapScreen.cpp \
     Delegate/connectionmanager.cpp \
-    Models/MavlinkCommunication.cpp \
     Models/TcpManager.cpp \
     Models/TcpWorker.cpp \
     Models/errormanager.cpp \
@@ -41,7 +40,6 @@ HEADERS += \
     Headers/CameraScreen.h \
     Headers/GlobalParams.h \
     Headers/MapScreen.h \
-    Headers/MavlinkCommunication.h \
     Headers/TcpManager.h \
     Headers/TcpWorker.h \
     Headers/maininterface.h \
