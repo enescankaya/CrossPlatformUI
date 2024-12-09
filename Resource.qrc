@@ -1,0 +1,49 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Resources/video.mp4</file>
+        <file>Views/qmlFiles/BatteryIcon.qml</file>
+        <file>Views/qmlFiles/Connections.qml</file>
+        <file>Views/qmlFiles/map.qml</file>
+        <file>Resources/icon2.png</file>
+        <file>Resources/AKINCI.png</file>
+        <file>Resources/DIHA.png</file>
+        <file>Resources/KIZILELMA.png</file>
+        <file>Resources/TB2.png</file>
+        <file>Resources/KEMANKES 1.png</file>
+        <file>Resources/KEMANKES 2.png</file>
+        <file>Resources/MINI IHA.png</file>
+        <file>Resources/TB3.png</file>
+        <file>Views/qmlFiles/Zooming.qml</file>
+        <file>Views/qmlFiles/fuelicon.qml</file>
+        <file>Views/qmlFiles/ChangeMode.qml</file>
+        <file>Views/qmlFiles/Throttle.qml</file>
+        <file>Resources/recording.png</file>
+        <file>Views/qmlFiles/Tcp_Connection.qml</file>
+        <file>Views/qmlFiles/Signal.qml</file>
+        <file>Resources/modeicon.png</file>
+        <file>Resources/Connection.png</file>
+        <file>Resources/start_video.png</file>
+        <file>Resources/stop_video.png</file>
+        <file>Resources/take_photo.png</file>
+        <file>Resources/zoom.png</file>
+        <file>Views/qmlFiles/ArmingState.qml</file>
+        <file>Views/qmlFiles/EngineState.qml</file>
+        <file>Resources/lock.png</file>
+        <file>Resources/security.png</file>
+        <file>Resources/unlock.png</file>
+        <file>Resources/plane-engine.png</file>
+        <file>Resources/plane-engine-OFF.png</file>
+        <file>Resources/plane-engine-ON.png</file>
+        <file>Resources/TCP_OFF.png</file>
+        <file>Resources/TCP_ON.png</file>
+        <file>Views/qmlFiles/HUD.qml</file>
+        <file>Views/qmlFiles/Compass.qml</file>
+        <file>Resources/TrackingIcon.png</file>
+        <file>Views/qmlFiles/Change_Altitude.qml</file>
+        <file>Views/qmlFiles/Errors.qml</file>
+        <file>Resources/warning.png</file>
+        <file>Resources/success.png</file>
+        <file>Resources/info.png</file>
+        <file>SITL.bat</file>
+    </qresource>
+</RCC>
