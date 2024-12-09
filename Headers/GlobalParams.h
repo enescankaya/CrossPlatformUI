@@ -19,7 +19,7 @@ public:
     bool TCP_CONNECTION_STATE = false;
     int TCP_Current_port = -1;
     QString TCP_Current_ip;
-
+    bool Mavlink_Available=false;
     bool allPanelsAvailable=true;
 signals:
     void connectionStatusChanged(bool connected);
