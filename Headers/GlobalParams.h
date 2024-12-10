@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QString>
 #include <QTcpSocket>
+#include "MapScreen.h"
 
 class GlobalParams : public QObject {
     Q_OBJECT
@@ -22,6 +23,32 @@ public:
     bool Mavlink_Available=false;
     bool allPanelsAvailable=true;
     bool isArmed=false;
+
+    enum Mode {
+        Manual = 0,
+        Circle = 1,
+        Auto = 10,
+        Guided = 15,
+        Taxi = -1,
+        RTL = 11
+    }Modes;
+    Mode indexToMode(int value) {
+        switch (value) {
+        case 0: return GlobalParams::Manual;
+        case 1: return GlobalParams::Circle;
+        case 2: return GlobalParams::Auto;
+        case 3: return GlobalParams::Guided;
+        case 4: return GlobalParams::Taxi;
+        case 5: return GlobalParams::RTL;
+        default:
+            return GlobalParams::Manual; //  varsayılan
+        }
+    }
+    float altitude;
+    double latitude;
+    double longitude;
+    MapScreen* mapScreen;
+
 signals:
     void connectionStatusChanged(bool connected);
     void showMessage(const QString& title, const QString& message,

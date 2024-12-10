@@ -2,6 +2,7 @@
 #ifndef TCPMANAGER_H
 #define TCPMANAGER_H
 
+#include "Library/Mavlink2/mavlink_types.h"
 #include <QObject>
 #include <QTcpSocket>
 #include <QThread>
@@ -29,6 +30,8 @@ signals:
     // Internal signals for worker communication
     void connectRequested(const QString &ip, int port);
     void disconnectRequested();
+    void processMAVLinkMessage(const mavlink_message_t& msg);
+    void sendMavlinkMessage(const mavlink_message_t& msg);
 
 private:
     void initializeWorker();

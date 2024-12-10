@@ -113,10 +113,12 @@ void MainInterface::handleModeChange(const QString &modeName, int modeIndex) {
     ui->Mode_Button->setText(modeName);
     uiStateManager->handleModeChange(modeIndex, ui->ThrottleWidget,
                                      ui->CHANGE_ALTITUDE_WIDGET, ui->main_Frame);
+    emit changeMode(GlobalParams::getInstance().indexToMode(modeIndex));
 }
 
 void MainInterface::handleGuidedMode(int altitude) {
     emit setAltitude(altitude);
+    emit AltitudeChanged(static_cast<float>(altitude));
 }
 
 void MainInterface::handleEngineStateChanged(bool isEngineOn) {
@@ -126,6 +128,11 @@ void MainInterface::handleEngineStateChanged(bool isEngineOn) {
 void MainInterface::handleSecurityStateChanged(bool isArmed) {
     uiStateManager->handleSecurityState(isArmed, ui->Arm_Button);
     GlobalParams::getInstance().isArmed=isArmed;
+    if(GlobalParams::getInstance().isArmed){
+        emit Arm();
+    }else{
+        emit disArm();
+    }
     setUI();
 }
 
@@ -162,7 +169,7 @@ void MainInterface::setUI(){
     ui->Mode_Button->setEnabled(GlobalParams::getInstance().TCP_CONNECTION_STATE && GlobalParams::getInstance().isArmed);
 }
 void MainInterface::handleAltitudeChanged(int value) {
-    qDebug() << "Altitude changed to:" << value;
+    emit AltitudeChanged(static_cast<float>(value));
 }
 
 void MainInterface::handleErrorDismissed() {
@@ -230,10 +237,7 @@ void MainInterface::on_takeVideo_Button_clicked() {
     static int value = 0;
     emit updateHUD(value, value, value, value);
     emit updateHeading(value);
-    emit setAltitude(value);
     value += 1;
-
-    // Handle recording animation
     if (!animationManager->isRecordingAnimationActive()) {
         animationManager->startRecordingAnimation(ui->Recording_Label);
     } else {
@@ -247,7 +251,6 @@ void MainInterface::on_takeVideo_Button_clicked() {
 void MainInterface::on_takePhoto_Button_clicked() {
     // Update system state
     errorManager->handleError("fs", "ew", "red", 3000);
-    emit setArmState(true);
     emit setEngineState(true);
     emit setFuelValue(12);
     emit setBatteryLevel(88);

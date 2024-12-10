@@ -159,10 +159,14 @@ void TcpWorker::ReadData(){
         }
         for (int i = 0; i < bytesRead; i++) {
             if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)) {//bir kere okudugunu bir daha okumuyor
-                //processMAVLinkMessage(msg);
+                emit processMAVLinkMessage(msg);
             }
         }
     }
 }
-
-
+void TcpWorker::sendMavlinkMessage(const mavlink_message_t& msg) {
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+    tcpSocket->write(reinterpret_cast<const char*>(buffer), len);
+    tcpSocket->flush();
+}

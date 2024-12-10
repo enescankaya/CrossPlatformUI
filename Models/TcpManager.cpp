@@ -21,15 +21,17 @@ void TcpManager::initializeWorker() {
 
     // Diğer sinyalleri bağla
     connect(worker, &TcpWorker::connectionStateChanged,
-            this, &TcpManager::connectionStateChanged);
+            this, &TcpManager::connectionStateChanged,Qt::QueuedConnection);
     connect(worker, &TcpWorker::showMessage,
-            this, &TcpManager::showMessage);
-
+            this, &TcpManager::showMessage,Qt::QueuedConnection);
+    connect(worker, &TcpWorker::processMAVLinkMessage,
+            this, &TcpManager::processMAVLinkMessage,Qt::QueuedConnection);
     connect(this, &TcpManager::connectRequested,
-            worker, &TcpWorker::handleConnect);
+            worker, &TcpWorker::handleConnect,Qt::QueuedConnection);
     connect(this, &TcpManager::disconnectRequested,
-            worker, &TcpWorker::handleDisconnect);
-
+            worker, &TcpWorker::handleDisconnect,Qt::QueuedConnection);
+    connect(this, &TcpManager::sendMavlinkMessage,
+            worker, &TcpWorker::sendMavlinkMessage,Qt::QueuedConnection);
     // Worker'ı başlat
     workerThread->start();
 }

@@ -6,6 +6,7 @@
 #include <QQuickItem>
 #include <TcpManager.h>
 #include <Headers/GlobalParams.h>
+#include <MavlinkCommunication.h>
 class MainInterface; // MainInterface sınıfını önceden bildirelim
 class TcpManager;
 class ConnectionManager : public QObject {
@@ -17,6 +18,7 @@ public:
 
 private:
     TcpManager *tcpManager;
+    MavlinkCommunication *mavlink_Class;
 
 
 };

@@ -1,8 +1,8 @@
 #pragma once
 #include <QVBoxLayout>
-#include "MapScreen.h"
+#include <MapScreen.h>
 #include "CameraScreen.h"
-
+#include <GlobalParams.h>
 class ScreenManager {
 public:
     ScreenManager(QWidget* smallFrame, QWidget* mainFrame);
@@ -12,7 +12,6 @@ public:
 private:
     QVBoxLayout* frameLayout1;
     QVBoxLayout* frameLayout2;
-    MapScreen* mapScreen;
     CameraScreen* cameraScreen;
     QWidget* smallFrame;
     QWidget* mainFrame;

@@ -1,6 +1,6 @@
 #include "errormanager.h"
 #include "qtconcurrentrun.h"
-#include <QMutexLocker> // QMutexLocker dahil edilir
+#include <QMutexLocker>
 #include <Headers/GlobalParams.h>
 ErrorManager::ErrorManager() {
     // Tüm paneller başlangıçta kullanılabilir olarak ayarlanır
@@ -16,8 +16,9 @@ void ErrorManager::handleError(const QString& title, const QString& message, con
     QMutexLocker locker(&mutex); // Mutex kilitlenir
     // Gelen hatayı kuyruğa ekler
     errorQueue.push(std::make_tuple(title, message, color, duration));
-    locker.unlock(); // Kilit açılır
     processQueue();  // Kuyruğu işlemeye çalışır
+    locker.unlock(); // Kilit açılır
+
 }
 
 void ErrorManager::handleDismissal() {
@@ -34,12 +35,10 @@ void ErrorManager::handleDismissal() {
 void ErrorManager::processQueue() {
     // QtConcurrent ile arka planda kuyruk işlemesini gerçekleştirir
     QFuture<void> future = QtConcurrent::run([this]() {
-        QMutexLocker locker(&mutex); // Mutex kilitlenir
 
         if (errorQueue.empty()) return; // Kuyruk boşsa çık
-        auto &globals = GlobalParams::getInstance();
         // Tüm panellerin boş olup olmadığını kontrol et
-        globals.allPanelsAvailable = std::all_of(panelsAvailability.begin(), panelsAvailability.end(), [](bool available) {
+        GlobalParams::getInstance().allPanelsAvailable = std::all_of(panelsAvailability.begin(), panelsAvailability.end(), [](bool available) {
             return available;
         });
         size_t checkedPanels = 0;

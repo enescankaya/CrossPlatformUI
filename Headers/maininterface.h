@@ -63,7 +63,7 @@ signals:
     void updateHeading(QVariant heading);
     void setMode(QVariant mode);
     void setAltitude(QVariant altitude);
-
+    void AltitudeChanged(float altitude);
     // System state signals
     void updateConnectionState(QVariant state);
     void setArmState(QVariant state);
@@ -71,7 +71,9 @@ signals:
     void setFuelValue(QVariant value);
     void setBatteryLevel(QVariant level);
     void setSignalStrength(QVariant strength);
-
+    void Arm();
+    void disArm();
+    void changeMode(GlobalParams::Mode currentMode);
     //Mavlink Signals
     void TCP_Connection_State(bool connectionState, const QString &ip, int port);
     // Error handling signals
@@ -134,6 +136,7 @@ private:
 
     int currentImageIndex{6};
     QProcess *process = new QProcess(this);
+
 
 };
 

@@ -4,7 +4,8 @@
 
 ConnectionManager::ConnectionManager(QObject* parent) :
     QObject(parent),
-    tcpManager(new TcpManager(this))
+    tcpManager(new TcpManager(this)),
+    mavlink_Class(new MavlinkCommunication(this))
 {}
 void ConnectionManager::setupConnections(MainInterface* mainInterface) {    
     // Mode connections
@@ -84,12 +85,19 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
             rootObjectBattery, SLOT(setValue(QVariant)));
 
     //Singleton
-    auto& globals = GlobalParams::getInstance();
-    connect(&globals, &GlobalParams::showMessage,mainInterface, &MainInterface::showMessage);
+    connect(&GlobalParams::getInstance(), &GlobalParams::showMessage,mainInterface, &MainInterface::showMessage);
 
     //TCP Connections
     connect(mainInterface, &MainInterface::TCP_Connection_State,tcpManager, &TcpManager::requestConnection);
     connect(tcpManager, &TcpManager::showMessage,mainInterface, &MainInterface::showMessage);
     connect(tcpManager, &TcpManager::connectionStateChanged,mainInterface, &MainInterface::updateConnectionState);
     connect(tcpManager, &TcpManager::connectionStateChanged,mainInterface, &MainInterface::setTCPButton);
+
+    //Mavlink Connections
+    connect(mavlink_Class,&MavlinkCommunication::sendMessage,tcpManager,&TcpManager::sendMavlinkMessage,Qt::QueuedConnection);
+    connect(tcpManager,&TcpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage,Qt::QueuedConnection);
+    connect(mainInterface,&MainInterface::Arm,mavlink_Class,&MavlinkCommunication::Arm,Qt::QueuedConnection);
+    connect(mainInterface,&MainInterface::disArm,mavlink_Class,&MavlinkCommunication::disArm,Qt::QueuedConnection);
+    connect(mainInterface,&MainInterface::changeMode,mavlink_Class,&MavlinkCommunication::changeMode,Qt::QueuedConnection);
+    connect(mainInterface,&MainInterface::AltitudeChanged,mavlink_Class,&MavlinkCommunication::SetAltitude,Qt::QueuedConnection);
 }
