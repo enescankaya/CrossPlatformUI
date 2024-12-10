@@ -15,16 +15,22 @@ public:
     void Arm();
     void disArm();
 
+
 public slots:
     void processMAVLinkMessage(const mavlink_message_t& msg);
     void changeMode(GlobalParams::Mode currentMode);
     void SetAltitude(float altitude);
-
+    void Go_Coordinate(double lat, double lng);
+    void Remove_Coordinate();
+    void SetThrottle(double throttlePercent);
 
 signals:
     void sendMessage(const mavlink_message_t& msg);
 private:
     QMutex mutex;
+    QAtomicInteger<bool> isSending=false;  // Verilerin gönderilip gönderilmeyeceğini kontrol etmek için
+
+
 
 signals:
 

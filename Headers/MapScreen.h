@@ -15,7 +15,7 @@ class MapScreen : public QWidget
 public:
     explicit MapScreen(QWidget *parent = nullptr);
     ~MapScreen();
-
+    QObject *qmlRootObject;
 private slots:
 
 private:

@@ -32,6 +32,7 @@ public:
         Taxi = -1,
         RTL = 11
     }Modes;
+    Mode currentMode=Mode::Manual;
     Mode indexToMode(int value) {
         switch (value) {
         case 0: return GlobalParams::Manual;
@@ -44,9 +45,10 @@ public:
             return GlobalParams::Manual; //  varsayılan
         }
     }
-    float altitude;
-    double latitude;
-    double longitude;
+    float altitude=100;//default
+    double latitude=39.9334;//Ankara
+    double longitude=32.8597;
+    float ThrottleValue=30;
     MapScreen* mapScreen;
 
 signals:

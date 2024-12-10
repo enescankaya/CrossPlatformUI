@@ -14,6 +14,10 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     connect(mainInterface, SIGNAL(setMode(QVariant)), rootObjectMode, SLOT(setMode(QVariant)));
     connect(rootObjectMode, SIGNAL(setGuidedMode(int)), mainInterface, SLOT(handleGuidedMode(int)));
 
+    // Throttle
+    auto rootObjectThrottle = mainInterface->ui->ThrottleWidget->rootObject();
+    connect(rootObjectThrottle, SIGNAL(throttleValueChanged(double)), mavlink_Class, SLOT(SetThrottle(double)));
+
     // Connection widget
     auto rootObjectConnection = mainInterface->ui->Connection_Widget->rootObject();
     connect(rootObjectConnection, SIGNAL(connectionSignal(bool,QString,int)),
@@ -100,4 +104,14 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     connect(mainInterface,&MainInterface::disArm,mavlink_Class,&MavlinkCommunication::disArm,Qt::QueuedConnection);
     connect(mainInterface,&MainInterface::changeMode,mavlink_Class,&MavlinkCommunication::changeMode,Qt::QueuedConnection);
     connect(mainInterface,&MainInterface::AltitudeChanged,mavlink_Class,&MavlinkCommunication::SetAltitude,Qt::QueuedConnection);
+   // connect(GlobalParams::getInstance().mapScreen->qmlRootObject,SIGNAL(),mavlink_Class,SLOT())
+     //   void Go_Coordinate(double lat, double lng);
+    //void Remove_Coordinate();
+
+    //Map
+    //auto obj = ui->quickWidget->rootObject();
+    //connect(show_values_class, SIGNAL(setMap(QVariant, QVariant,QVariant)), obj, SLOT(addMarker(QVariant, QVariant,QVariant)));
+    connect(GlobalParams::getInstance().mapScreen->qmlRootObject, SIGNAL(rightClickSignal(double,double)), mavlink_Class, SLOT(Go_Coordinate(double,double)),Qt::QueuedConnection);
+    connect(GlobalParams::getInstance().mapScreen->qmlRootObject, SIGNAL(removerightClickSignal()), mavlink_Class, SLOT(Remove_Coordinate()),Qt::QueuedConnection);
+    //connect(obj, SIGNAL(removerightClickSignal()), show_values_class, SLOT(Remove_Coordinate()));
 }

@@ -42,8 +42,7 @@ void MainInterface::setupManagers() {
     connectionManager = std::make_unique<ConnectionManager>(this);
     animationManager = std::make_unique<AnimationManager>(this);
 
-    // Configure connection manager
-    connectionManager->setupConnections(this);
+
 
     // Register widgets with widget manager
     const std::vector<QQuickWidget*> managedWidgets = {
@@ -57,6 +56,8 @@ void MainInterface::setupManagers() {
     for (auto* widget : managedWidgets) {
         widgetManager->addWidget(widget);
     }
+    // Configure connection manager
+    connectionManager->setupConnections(this);
 }
 
 void MainInterface::setupQmlWidgets() {
@@ -113,6 +114,7 @@ void MainInterface::handleModeChange(const QString &modeName, int modeIndex) {
     ui->Mode_Button->setText(modeName);
     uiStateManager->handleModeChange(modeIndex, ui->ThrottleWidget,
                                      ui->CHANGE_ALTITUDE_WIDGET, ui->main_Frame);
+    GlobalParams::getInstance().currentMode=GlobalParams::getInstance().indexToMode(modeIndex);
     emit changeMode(GlobalParams::getInstance().indexToMode(modeIndex));
 }
 

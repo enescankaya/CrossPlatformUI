@@ -9,14 +9,14 @@ MapScreen::MapScreen(QWidget *parent)
     ui->setupUi(this);
     ui->quickWidget->setSource(QUrl(QStringLiteral("qrc:/Views/qmlFiles/map.qml")));
     ui->quickWidget->show();
-    QObject *qmlRootObject = ui->quickWidget->rootObject();
-    connect(ui->Zoom_Out_Button, &QPushButton::clicked, this, [qmlRootObject]() {
+    qmlRootObject = ui->quickWidget->rootObject();
+    connect(ui->Zoom_Out_Button, &QPushButton::clicked, this, [this]() {
         QMetaObject::invokeMethod(qmlRootObject, "zoomOut");
     });
-    connect(ui->Zoom_In_Button, &QPushButton::clicked, this, [qmlRootObject]() {
+    connect(ui->Zoom_In_Button, &QPushButton::clicked, this, [this]() {
         QMetaObject::invokeMethod(qmlRootObject, "zoomIn");
     });
-    connect(ui->Default_Location_Button, &QPushButton::clicked, this, [qmlRootObject]() {
+    connect(ui->Default_Location_Button, &QPushButton::clicked, this, [this]() {
         QMetaObject::invokeMethod(qmlRootObject, "setDefaultLocation");
     });
 }
