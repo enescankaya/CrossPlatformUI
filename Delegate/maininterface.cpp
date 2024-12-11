@@ -114,8 +114,8 @@ void MainInterface::handleModeChange(const QString &modeName, int modeIndex) {
     ui->Mode_Button->setText(modeName);
     uiStateManager->handleModeChange(modeIndex, ui->ThrottleWidget,
                                      ui->CHANGE_ALTITUDE_WIDGET, ui->main_Frame);
-    GlobalParams::getInstance().currentMode=GlobalParams::getInstance().indexToMode(modeIndex);
     emit changeMode(GlobalParams::getInstance().indexToMode(modeIndex));
+    GlobalParams::getInstance().currentMode=GlobalParams::getInstance().indexToMode(modeIndex);
 }
 
 void MainInterface::handleGuidedMode(int altitude) {
@@ -231,15 +231,6 @@ void MainInterface::on_Swapping_Button_clicked() {
 
 void MainInterface::on_takeVideo_Button_clicked() {
     // Update system state
-    errorManager->handleError("merhaba", "hayır", "green", 5000);
-    emit updateConnectionState(true);
-    emit setMode(0);
-
-    // Update HUD values
-    static int value = 0;
-    emit updateHUD(value, value, value, value);
-    emit updateHeading(value);
-    value += 1;
     if (!animationManager->isRecordingAnimationActive()) {
         animationManager->startRecordingAnimation(ui->Recording_Label);
     } else {
@@ -251,22 +242,8 @@ void MainInterface::on_takeVideo_Button_clicked() {
 }
 
 void MainInterface::on_takePhoto_Button_clicked() {
-    // Update system state
-    errorManager->handleError("fs", "ew", "red", 3000);
-    emit setEngineState(true);
-    emit setFuelValue(12);
-    emit setBatteryLevel(88);
-    emit setSignalStrength(94);
-    emit updateConnectionState(false);
-
     // Create photo animation
     animationManager->createPhotoButtonAnimation(ui->takePhoto_Button);
-
-    // Update HUD values
-    static int value = 0;
-    emit updateHUD(value, value, value, value);
-    emit updateHeading(value);
-    value -= 1;
 }
 
 void MainInterface::on_uavIcons_Button_clicked() {
@@ -291,6 +268,12 @@ void MainInterface::showMessage(const QString& title, const QString& message,//b
     if(GlobalParams::getInstance().allPanelsAvailable){
         ui->Errors_Frame->raise();
     }
+}
+void MainInterface::UpdateInfos(uint16_t throttle,float airspeed,float groundspeed,int32_t rpm_value){
+    ui->THROTTLE_VALUE->setText(QString::number(throttle));
+    ui->AIR_SPEED_VALUE->setText(QString::number(airspeed, 'f', 1));
+    ui->GROUND_SPEED_VALUE->setText(QString::number(groundspeed, 'f', 1));
+    ui->RPM_VALUE->setText(QString::number(rpm_value));
 }
 
 MainInterface::~MainInterface() = default;

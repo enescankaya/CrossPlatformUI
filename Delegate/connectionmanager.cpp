@@ -11,7 +11,7 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     // Mode connections
     auto rootObjectMode = mainInterface->ui->change_Mode->rootObject();
     connect(rootObjectMode, SIGNAL(modeChanged(QString,int)), mainInterface, SLOT(handleModeChange(QString,int)));
-    connect(mainInterface, SIGNAL(setMode(QVariant)), rootObjectMode, SLOT(setMode(QVariant)));
+    connect(mavlink_Class, SIGNAL(setMode(QVariant)), rootObjectMode, SLOT(setMode(QVariant)));
     connect(rootObjectMode, SIGNAL(setGuidedMode(int)), mainInterface, SLOT(handleGuidedMode(int)));
 
     // Throttle
@@ -29,19 +29,19 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     auto rootObjectEngine = mainInterface->ui->Engine_Widget->rootObject();
     connect(rootObjectEngine, SIGNAL(engineStateChanged(bool)),
             mainInterface, SLOT(handleEngineStateChanged(bool)));
-    connect(mainInterface, SIGNAL(setEngineState(QVariant)),
+    connect(mavlink_Class, SIGNAL(setEngineState(QVariant)),
             rootObjectEngine, SLOT(setMode(QVariant)));
 
     // Arm state
     auto rootObjectArm = mainInterface->ui->Arm_Widget->rootObject();
     connect(rootObjectArm, SIGNAL(securityStateChanged(bool)),
             mainInterface, SLOT(handleSecurityStateChanged(bool)));
-    connect(mainInterface, SIGNAL(setArmState(QVariant)),
+    connect(mavlink_Class, SIGNAL(setArmState(QVariant)),
             rootObjectArm, SLOT(setMode(QVariant)));
 
     // HUD and telemetry
     auto rootObjectHUD = mainInterface->ui->HUD_Widget->rootObject();
-    connect(mainInterface, SIGNAL(updateHUD(QVariant,QVariant,QVariant,QVariant)),
+    connect(mavlink_Class, SIGNAL(updateHUD(QVariant,QVariant,QVariant,QVariant)),
             rootObjectHUD, SLOT(updateValues(QVariant,QVariant,QVariant,QVariant)));
 
     auto rootObjectCompass = mainInterface->ui->Compass_Widget->rootObject();
@@ -77,15 +77,15 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     // Status widgets
 
     auto rootObjectSignal = mainInterface->ui->Signal_Widget->rootObject();
-    connect(mainInterface, SIGNAL(setSignalStrength(QVariant)),
+    connect(mavlink_Class, SIGNAL(setSignalStrength(QVariant)),
             rootObjectSignal, SLOT(setValue(QVariant)));
 
     auto rootObjectFuel = mainInterface->ui->fuel_state_Widget->rootObject();
-    connect(mainInterface, SIGNAL(setFuelValue(QVariant)),
+    connect(mavlink_Class, SIGNAL(setFuelValue(QVariant)),
             rootObjectFuel, SLOT(setValue(QVariant)));
 
     auto rootObjectBattery = mainInterface->ui->Battery_Status_Widget->rootObject();
-    connect(mainInterface, SIGNAL(setBatteryLevel(QVariant)),
+    connect(mavlink_Class, SIGNAL(setBatteryLevel(QVariant)),
             rootObjectBattery, SLOT(setValue(QVariant)));
 
     //Singleton
@@ -99,19 +99,20 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
 
     //Mavlink Connections
     connect(mavlink_Class,&MavlinkCommunication::sendMessage,tcpManager,&TcpManager::sendMavlinkMessage,Qt::QueuedConnection);
+    connect(mavlink_Class,&MavlinkCommunication::sendMessage,tcpManager,&TcpManager::sendMavlinkMessage,Qt::QueuedConnection);
     connect(tcpManager,&TcpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage,Qt::QueuedConnection);
     connect(mainInterface,&MainInterface::Arm,mavlink_Class,&MavlinkCommunication::Arm,Qt::QueuedConnection);
     connect(mainInterface,&MainInterface::disArm,mavlink_Class,&MavlinkCommunication::disArm,Qt::QueuedConnection);
     connect(mainInterface,&MainInterface::changeMode,mavlink_Class,&MavlinkCommunication::changeMode,Qt::QueuedConnection);
     connect(mainInterface,&MainInterface::AltitudeChanged,mavlink_Class,&MavlinkCommunication::SetAltitude,Qt::QueuedConnection);
+    connect(mavlink_Class,&MavlinkCommunication::updateHeading,mainInterface,&MainInterface::updateHeading,Qt::QueuedConnection);
+    connect(mavlink_Class,&MavlinkCommunication::updateInfoHud,mainInterface,&MainInterface::UpdateInfos,Qt::QueuedConnection);
    // connect(GlobalParams::getInstance().mapScreen->qmlRootObject,SIGNAL(),mavlink_Class,SLOT())
      //   void Go_Coordinate(double lat, double lng);
     //void Remove_Coordinate();
 
     //Map
-    //auto obj = ui->quickWidget->rootObject();
-    //connect(show_values_class, SIGNAL(setMap(QVariant, QVariant,QVariant)), obj, SLOT(addMarker(QVariant, QVariant,QVariant)));
+    connect(mavlink_Class, SIGNAL(setMap(QVariant,QVariant,QVariant)), GlobalParams::getInstance().mapScreen->qmlRootObject, SLOT(addMarker(QVariant,QVariant,QVariant)),Qt::QueuedConnection);
     connect(GlobalParams::getInstance().mapScreen->qmlRootObject, SIGNAL(rightClickSignal(double,double)), mavlink_Class, SLOT(Go_Coordinate(double,double)),Qt::QueuedConnection);
     connect(GlobalParams::getInstance().mapScreen->qmlRootObject, SIGNAL(removerightClickSignal()), mavlink_Class, SLOT(Remove_Coordinate()),Qt::QueuedConnection);
-    //connect(obj, SIGNAL(removerightClickSignal()), show_values_class, SLOT(Remove_Coordinate()));
 }

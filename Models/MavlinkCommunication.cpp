@@ -9,28 +9,88 @@ MavlinkCommunication::MavlinkCommunication(QObject *parent):
 
 
 void MavlinkCommunication::processMAVLinkMessage(const mavlink_message_t& msg) {
-    QFuture<void> future = QtConcurrent::run([&msg]() {
+    QFuture<void> future = QtConcurrent::run([&msg, this]() {
         switch (msg.msgid) {
         case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
-            //handleGlobalPosition(msg);
+            handleGlobalPosition(msg);
             break;
         case MAVLINK_MSG_ID_ATTITUDE:
-            //handleAttitude(msg);
+            handleAttitude(msg);
             break;
         case MAVLINK_MSG_ID_VFR_HUD:
-            //handleAirspeed(msg);
-            break;
-        case MAVLINK_MSG_ID_SCALED_PRESSURE:
-            //handlePressure(msg);
+            handleInfos(msg);
             break;
         case MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT:
             //handleNavigation(msg);
+            break;
+        case MAVLINK_MSG_ID_ESC_STATUS:
+            handleRPM(msg);
+            break;
+        case MAVLINK_MSG_ID_RC_CHANNELS:
+            handleRSSI(msg);
+            break;
+        case MAVLINK_MSG_ID_SYS_STATUS:
+            handleFuelAndBatteryStatus(msg);
+            break;
+        case MAVLINK_MSG_ID_HEARTBEAT:
+            handleHeartbeat(msg);
             break;
         default:
             break;
         }
     });
+}
 
+void MavlinkCommunication::handleInfos(const mavlink_message_t& msg) {
+    mavlink_vfr_hud_t hud;
+    mavlink_msg_vfr_hud_decode(&msg, &hud);
+    emit updateInfoHud(hud.throttle,hud.airspeed,hud.groundspeed,GlobalParams::getInstance().rpm_value);
+}
+void MavlinkCommunication::handleRPM(const mavlink_message_t& msg) {
+    mavlink_esc_status_t esc_status;
+    mavlink_msg_esc_status_decode(&msg, &esc_status);
+    GlobalParams::getInstance().rpm_value = esc_status.rpm[0];  // Assuming first ESC is main
+}
+void MavlinkCommunication::handleRSSI(const mavlink_message_t& msg) {
+    mavlink_rc_channels_t rc_channels;
+    mavlink_msg_rc_channels_decode(&msg, &rc_channels);
+    emit setSignalStrength(static_cast<int>((rc_channels.rssi / 255.0) * 100.0));
+}
+
+void MavlinkCommunication::handleFuelAndBatteryStatus(const mavlink_message_t& msg) {
+    mavlink_sys_status_t sys_status;
+    mavlink_msg_sys_status_decode(&msg, &sys_status);
+    emit setFuelValue(sys_status.load / 10.0f);
+    emit setBatteryLevel(sys_status.battery_remaining);
+}
+
+void MavlinkCommunication::handleHeartbeat(const mavlink_message_t& msg) {
+    mavlink_heartbeat_t heartbeat;
+    mavlink_msg_heartbeat_decode(&msg, &heartbeat);
+
+    // Extract arm state and current mode
+    bool armed = (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED);
+    if(armed != GlobalParams::getInstance().isArmed){
+        emit setArmState(armed);
+        emit GlobalParams::getInstance().showMessage(armed ? "Armed": "Disarned","State Changed", armed ?  "green":"red",2000);
+    }
+    if(static_cast<uint8_t>(GlobalParams::getInstance().currentMode)!=heartbeat.custom_mode){
+        emit setMode(GlobalParams::getInstance().getModeIndex(heartbeat.custom_mode));
+        emit GlobalParams::getInstance().showMessage("Mode Changed", "","",2000);
+    }
+}
+void MavlinkCommunication::handleGlobalPosition(const mavlink_message_t& msg) {
+    mavlink_global_position_int_t global_position;
+    mavlink_msg_global_position_int_decode(&msg, &global_position);
+    GlobalParams::getInstance().vertical_speed=global_position.vz / 100.0f;
+    GlobalParams::getInstance().altitude=global_position.relative_alt / 1000.0;
+    emit setMap(global_position.lat / 1e7,global_position.lon / 1e7,global_position.hdg/100.0);
+    emit updateHeading(global_position.hdg / 100.0);
+}
+void MavlinkCommunication::handleAttitude(const mavlink_message_t& msg) {
+    mavlink_attitude_t attitude;
+    mavlink_msg_attitude_decode(&msg, &attitude);
+    emit updateHUD(GlobalParams::getInstance().vertical_speed,GlobalParams::getInstance().altitude,attitude.pitch * 180 / M_PI,attitude.roll * 180 / M_PI);
 }
 void MavlinkCommunication::disArm(){
     QFuture<void> future = QtConcurrent::run([=]() {
@@ -177,7 +237,6 @@ void MavlinkCommunication::SetThrottle(double throttlePercent) {
                 0              // Sign/Flags field for MAVLink 2
                 );
             emit sendMessage(msg);
-            qDebug() << pwmValue;
 
             // 2 HZ FREKANS(MISSION PLANNER ILE ESITLENDI)
             QThread::msleep(500);

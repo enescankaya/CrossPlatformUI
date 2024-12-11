@@ -154,11 +154,10 @@ void TcpWorker::ReadData(){
         int bytesRead = tcpSocket->read(reinterpret_cast<char*>(buffer), MAVLINK_MAX_PACKET_LEN);
         if (bytesRead <= 0) {
             emit showMessage("Error", "Could not Read Data", "", 1500);
-             // Veri okunamadığında hata sinyali gönder
             return;
         }
         for (int i = 0; i < bytesRead; i++) {
-            if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)) {//bir kere okudugunu bir daha okumuyor
+            if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)) { //bir kere okudugunu bir daha okumuyor
                 emit processMAVLinkMessage(msg);
             }
         }

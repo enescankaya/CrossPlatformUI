@@ -26,6 +26,7 @@ signals:
     void showMessage(const QString& title, const QString& message,
                      const QString& color, int duration);
     void processMAVLinkMessage(const mavlink_message_t& msg);
+
 private slots:
     void handleSocketError(QAbstractSocket::SocketError socketError);
     void handleStateChange(QAbstractSocket::SocketState socketState);

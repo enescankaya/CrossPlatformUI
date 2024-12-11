@@ -59,18 +59,12 @@ public:
 
 signals:
     // Navigation and HUD signals
-    void updateHUD(QVariant roll, QVariant pitch, QVariant yaw, QVariant altitude);
     void updateHeading(QVariant heading);
-    void setMode(QVariant mode);
     void setAltitude(QVariant altitude);
     void AltitudeChanged(float altitude);
     // System state signals
     void updateConnectionState(QVariant state);
-    void setArmState(QVariant state);
-    void setEngineState(QVariant state);
-    void setFuelValue(QVariant value);
-    void setBatteryLevel(QVariant level);
-    void setSignalStrength(QVariant strength);
+
     void Arm();
     void disArm();
     void changeMode(GlobalParams::Mode currentMode);
@@ -103,6 +97,7 @@ public slots:
     void on_uavIcons_Button_clicked();
     void on_Swapping_Button_clicked();
     void setTCPButton(bool TCP_CONNECTION_STATE);
+    void UpdateInfos(uint16_t throttle,float airspeed,float groundspeed,int32_t rpm_value);
 
 private:
     // Setup methods

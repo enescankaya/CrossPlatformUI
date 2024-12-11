@@ -47,8 +47,8 @@ Rectangle {
         }
 
         function setDefaultLocation() {
-            mapView.center = QtPositioning.coordinate(39.9334,  32.8597);
-            addMarker(39.9334, 32.8597, 0)
+            mapView.center = QtPositioning.coordinate(oldLat,  oldLng);
+            addMarker(oldLat, oldLng, 0)
         }
     MouseArea {
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
