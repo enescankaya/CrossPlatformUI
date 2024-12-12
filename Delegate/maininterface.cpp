@@ -139,7 +139,7 @@ void MainInterface::handleSecurityStateChanged(bool isArmed) {
 }
 
 void MainInterface::handleConnectionSignal(bool connectionState, const QString &ip, int port) {
-    set_SITL();
+    //set_SITL();
     // Only proceed if there's an actual state change
     if (GlobalParams::getInstance().TCP_CONNECTION_STATE != connectionState) {
         emit TCP_Connection_State(connectionState, ip, port);
@@ -259,7 +259,6 @@ void MainInterface::on_uavIcons_Button_clicked() {
 
 void MainInterface::on_zoom_Button_clicked() {
     ui->zoomingWidget->setVisible(!ui->zoomingWidget->isVisible());
-    errorManager->handleError("OCIS", "okay", "", 5000);
 }
 
 void MainInterface::showMessage(const QString& title, const QString& message,//burayı düzelt

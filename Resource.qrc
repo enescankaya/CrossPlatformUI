@@ -45,5 +45,6 @@
         <file>Resources/success.png</file>
         <file>Resources/info.png</file>
         <file>SITL.bat</file>
+        <file>Resources/mavlinkIcon.png</file>
     </qresource>
 </RCC>

@@ -5,8 +5,28 @@
 MavlinkCommunication::MavlinkCommunication(QObject *parent):
     QObject(parent)
 {
-}
+    m_lastHeartbeat.start();
 
+    // Create timer to continuously check heartbeat status
+    QTimer* signalCheckTimer = new QTimer(this);
+    connect(signalCheckTimer, &QTimer::timeout, this, &MavlinkCommunication::updateMavlinkSignalStrength);
+    signalCheckTimer->start(500); // Check every 500ms
+}
+void MavlinkCommunication::updateMavlinkSignalStrength() {
+    qint64 timeSinceLastHeartbeat = m_lastHeartbeat.elapsed();
+
+    // Calculate signal strength (0-100)
+    int signalStrength;
+    if (timeSinceLastHeartbeat <= 1000) { // Good signal: less than 1 second
+        signalStrength = 100;
+    } else if (timeSinceLastHeartbeat >= MAX_HEARTBEAT_INTERVAL) { // No signal
+        signalStrength = 0;
+    } else { // Linear interpolation between 1000ms and MAX_HEARTBEAT_INTERVAL
+        signalStrength = static_cast<int>(100 * (1.0 - (timeSinceLastHeartbeat - 1000.0) / (MAX_HEARTBEAT_INTERVAL - 1000.0)));
+    }
+
+    emit setMavlinkSignalValue(signalStrength);
+}
 
 void MavlinkCommunication::processMAVLinkMessage(const mavlink_message_t& msg) {
     QFuture<void> future = QtConcurrent::run([&msg, this]() {
@@ -67,16 +87,16 @@ void MavlinkCommunication::handleFuelAndBatteryStatus(const mavlink_message_t& m
 void MavlinkCommunication::handleHeartbeat(const mavlink_message_t& msg) {
     mavlink_heartbeat_t heartbeat;
     mavlink_msg_heartbeat_decode(&msg, &heartbeat);
-
+    m_lastHeartbeat.restart();
     // Extract arm state and current mode
     bool armed = (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED);
     if(armed != GlobalParams::getInstance().isArmed){
         emit setArmState(armed);
-        emit GlobalParams::getInstance().showMessage(armed ? "Armed": "Disarned","State Changed", armed ?  "green":"red",2000);
+        emit GlobalParams::getInstance().showMessage(armed ? "Armed": "Disarmed","State Changed", armed ?  "green":"red",2000);
     }
     if(static_cast<uint8_t>(GlobalParams::getInstance().currentMode)!=heartbeat.custom_mode){
         emit setMode(GlobalParams::getInstance().getModeIndex(heartbeat.custom_mode));
-        emit GlobalParams::getInstance().showMessage("Mode Changed", "","",2000);
+        emit GlobalParams::getInstance().showMessage("Mode Changed", "Mode Has Been Changed","",2000);
     }
 }
 void MavlinkCommunication::handleGlobalPosition(const mavlink_message_t& msg) {

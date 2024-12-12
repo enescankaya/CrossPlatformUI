@@ -36,6 +36,7 @@ signals:
     void setArmState(QVariant state);
     void setEngineState(QVariant state);
     void setMode(QVariant mode);
+    void setMavlinkSignalValue(int value);
 
 private:
     QMutex mutex;
@@ -47,6 +48,9 @@ private:
     void handleInfos(const mavlink_message_t& msg);
     void handleFuelAndBatteryStatus(const mavlink_message_t& msg);
     void handleHeartbeat(const mavlink_message_t& msg);
+    QElapsedTimer m_lastHeartbeat;
+    static constexpr int MAX_HEARTBEAT_INTERVAL = 3000; // 3 seconds maximum interval
+    void updateMavlinkSignalStrength();
 signals:
 
 };

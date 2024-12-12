@@ -6,8 +6,15 @@ ConnectionManager::ConnectionManager(QObject* parent) :
     QObject(parent),
     tcpManager(new TcpManager(this)),
     mavlink_Class(new MavlinkCommunication(this))
-{}
-void ConnectionManager::setupConnections(MainInterface* mainInterface) {    
+{
+
+}
+void ConnectionManager::setupConnections(MainInterface* mainInterface) {
+
+    //MavlinkSignal Qml
+    auto rootObjectMavlink = mainInterface->ui->Connection_States_Widget_4->rootObject();
+    connect(mavlink_Class, SIGNAL(setMavlinkSignalValue(int)), rootObjectMavlink, SLOT(setSignalValue(int)));
+
     // Mode connections
     auto rootObjectMode = mainInterface->ui->change_Mode->rootObject();
     connect(rootObjectMode, SIGNAL(modeChanged(QString,int)), mainInterface, SLOT(handleModeChange(QString,int)));
@@ -107,10 +114,6 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     connect(mainInterface,&MainInterface::AltitudeChanged,mavlink_Class,&MavlinkCommunication::SetAltitude,Qt::QueuedConnection);
     connect(mavlink_Class,&MavlinkCommunication::updateHeading,mainInterface,&MainInterface::updateHeading,Qt::QueuedConnection);
     connect(mavlink_Class,&MavlinkCommunication::updateInfoHud,mainInterface,&MainInterface::UpdateInfos,Qt::QueuedConnection);
-   // connect(GlobalParams::getInstance().mapScreen->qmlRootObject,SIGNAL(),mavlink_Class,SLOT())
-     //   void Go_Coordinate(double lat, double lng);
-    //void Remove_Coordinate();
-
     //Map
     connect(mavlink_Class, SIGNAL(setMap(QVariant,QVariant,QVariant)), GlobalParams::getInstance().mapScreen->qmlRootObject, SLOT(addMarker(QVariant,QVariant,QVariant)),Qt::QueuedConnection);
     connect(GlobalParams::getInstance().mapScreen->qmlRootObject, SIGNAL(rightClickSignal(double,double)), mavlink_Class, SLOT(Go_Coordinate(double,double)),Qt::QueuedConnection);

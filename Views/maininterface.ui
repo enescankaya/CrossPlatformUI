@@ -771,7 +771,7 @@ background: rgba(0,0,0,0);</string>
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="ConnectionStatus_Layout_4" stretch="0,2,1,2">
+           <layout class="QHBoxLayout" name="ConnectionStatus_Layout_4" stretch="0,2,1,0,0">
             <property name="spacing">
              <number>0</number>
             </property>
@@ -881,6 +881,38 @@ background: rgba(0,0,0,0);</string>
               </property>
               <property name="resizeMode">
                <enum>QQuickWidget::ResizeMode::SizeRootObjectToView</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLCDNumber" name="Counter">
+              <property name="layoutDirection">
+               <enum>Qt::LayoutDirection::LeftToRight</enum>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">    font.family:&quot;#9A9EB1&quot;    
+    font-size: 12px; /* Yazı boyutu */
+    font-weight: bold; /* Kalın yazı */
+    color: white; /* Yazı rengi */
+    text-align: center; /* Metni ortalamak */
+    padding: 10px; /* Kenar boşlukları */
+    border: none; /* Kenarlık yok */
+background: rgba(0,0,0,0);</string>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::Shape::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Shadow::Plain</enum>
+              </property>
+              <property name="smallDecimalPoint">
+               <bool>false</bool>
+              </property>
+              <property name="mode">
+               <enum>QLCDNumber::Mode::Dec</enum>
+              </property>
+              <property name="segmentStyle">
+               <enum>QLCDNumber::SegmentStyle::Flat</enum>
               </property>
              </widget>
             </item>
