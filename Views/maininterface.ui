@@ -504,7 +504,7 @@ QLabel {
           </size>
          </property>
         </widget>
-        <widget class="QLabel" name="BaykarLabel">
+        <widget class="QLabel" name="UAV_State_Label">
          <property name="geometry">
           <rect>
            <x>38</x>

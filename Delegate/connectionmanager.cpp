@@ -114,6 +114,7 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     connect(mainInterface,&MainInterface::AltitudeChanged,mavlink_Class,&MavlinkCommunication::SetAltitude,Qt::QueuedConnection);
     connect(mavlink_Class,&MavlinkCommunication::updateHeading,mainInterface,&MainInterface::updateHeading,Qt::QueuedConnection);
     connect(mavlink_Class,&MavlinkCommunication::updateInfoHud,mainInterface,&MainInterface::UpdateInfos,Qt::QueuedConnection);
+    connect(mavlink_Class,&MavlinkCommunication::updateClock,mainInterface,&MainInterface::showTime,Qt::QueuedConnection);
     //Map
     connect(mavlink_Class, SIGNAL(setMap(QVariant,QVariant,QVariant)), GlobalParams::getInstance().getMapScreen()->qmlRootObject, SLOT(addMarker(QVariant,QVariant,QVariant)),Qt::QueuedConnection);
     connect(GlobalParams::getInstance().getMapScreen()->qmlRootObject, SIGNAL(rightClickSignal(double,double)), mavlink_Class, SLOT(Go_Coordinate(double,double)),Qt::QueuedConnection);

@@ -7,7 +7,7 @@ MavlinkCommunication::MavlinkCommunication(QObject *parent):
 {
     m_lastHeartbeat.start();
 
-    // Create timer to continuously check heartbeat status
+    // timer to continuously check heartbeat status
     QTimer* signalCheckTimer = new QTimer(this);
     connect(signalCheckTimer, &QTimer::timeout, this, &MavlinkCommunication::updateMavlinkSignalStrength);
     signalCheckTimer->start(500); // Check every 500ms
@@ -43,6 +43,7 @@ void MavlinkCommunication::updateMavlinkSignalStrength() {
         GlobalParams::getInstance().setCurrentMode(currentMode);
         emit setMode(GlobalParams::getInstance().getModeIndex(static_cast<int>(currentMode)));
     }
+    emit updateClock(isArmed);
 }
 
 void MavlinkCommunication::processMAVLinkMessage(const mavlink_message_t& msg) {
@@ -290,7 +291,7 @@ void MavlinkCommunication::SetThrottle(double throttlePercent) {
                 );
             emit sendMessage(msg);
 
-            // 2 HZ FREKANS(MISSION PLANNER ILE ESITLENDI)
+            // 10 HZ FREKANS(MISSION PLANNER ILE ESITLENDI)
             QThread::msleep(100);
         }
     }

@@ -37,6 +37,7 @@ signals:
     void setEngineState(QVariant state);
     void setMode(QVariant mode);
     void setMavlinkSignalValue(int value);
+    void updateClock(bool isActive);
 
 private:
     QMutex mutex;

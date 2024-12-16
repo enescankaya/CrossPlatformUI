@@ -101,6 +101,9 @@ public slots:
     void setTCPButton(bool TCP_CONNECTION_STATE);
     void UpdateInfos(uint16_t throttle,float airspeed,float groundspeed,int32_t rpm_value);
 
+    //LCD time
+    void showTime(bool isActive);
+
 private:
     // Setup methods
     void setupManagers();

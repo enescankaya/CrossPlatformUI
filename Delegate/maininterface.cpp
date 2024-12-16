@@ -210,7 +210,7 @@ void MainInterface::on_Swapping_Button_clicked() {
     screenManager->adjustVisibility(ui->videoSettings_Frame, ui->HUD_Widget, ui->Compass_Widget);
     // Update UI element stacking order
     const std::vector<QWidget*> stackingOrder = {
-        ui->BaykarLabel,
+        ui->UAV_State_Label,
         ui->Swapping_Button,
         ui->Top_Frame,
         ui->infos_Frame,
@@ -279,6 +279,35 @@ void MainInterface::UpdateInfos(uint16_t throttle,float airspeed,float groundspe
     ui->AIR_SPEED_VALUE->setText(QString::number(airspeed, 'f', 1));
     ui->GROUND_SPEED_VALUE->setText(QString::number(groundspeed, 'f', 1));
     ui->RPM_VALUE->setText(QString::number(rpm_value));
+}
+void MainInterface::showTime(bool isActive) {
+    static QTime elapsedTime(0, 0, 0); // Statik sayaç başlangıcı (00:00:00)
+    static bool wasActive = false;    // Önceki durumun takibi
+
+    if (isActive) {
+        if (!wasActive) {
+            // Sayaç tekrar başlıyorsa, sıfırdan başlat
+            elapsedTime = QTime(0, 0, 0);
+            ui->UAV_State_Label->setText("FLYING");
+        }
+
+        // Her tetiklenmede bir saniye ekle
+        elapsedTime = elapsedTime.addMSecs(500);
+
+        // Sayaç değerini görüntüle
+        QString timeString = elapsedTime.toString("HH:mm:ss");
+        ui->Counter->display(timeString);
+
+        wasActive = true; // Durumu güncelle
+    } else {
+        if (wasActive) {
+            // Aktif değilse, display'i sıfırla
+            ui->Counter->display("00:00:00");
+            ui->UAV_State_Label->setText("READY TO FLY");
+        }
+
+        wasActive = false; // Durumu güncelle
+    }
 }
 
 MainInterface::~MainInterface() = default;
