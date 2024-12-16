@@ -3,7 +3,7 @@
 ScreenManager::ScreenManager(QWidget* smallFrame, QWidget* mainFrame)
     : smallFrame(smallFrame), mainFrame(mainFrame) {
 
-    GlobalParams::getInstance().mapScreen = new MapScreen(mainFrame);
+    GlobalParams::getInstance().setMapScreen(new MapScreen(mainFrame));
     cameraScreen = new CameraScreen(smallFrame);
     setupLayouts();
 }
@@ -12,7 +12,7 @@ void ScreenManager::setupLayouts() {
     frameLayout1 = new QVBoxLayout(smallFrame);
     frameLayout2 = new QVBoxLayout(mainFrame);
     frameLayout1->addWidget(cameraScreen);
-    frameLayout2->addWidget(GlobalParams::getInstance().mapScreen);
+    frameLayout2->addWidget(GlobalParams::getInstance().getMapScreen());
 }
 
 void ScreenManager::swapScreens() {

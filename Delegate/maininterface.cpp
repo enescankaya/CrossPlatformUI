@@ -115,12 +115,18 @@ void MainInterface::handleModeChange(const QString &modeName, int modeIndex) {
     uiStateManager->handleModeChange(modeIndex, ui->ThrottleWidget,
                                      ui->CHANGE_ALTITUDE_WIDGET, ui->main_Frame);
     emit changeMode(GlobalParams::getInstance().indexToMode(modeIndex));
-    GlobalParams::getInstance().currentMode=GlobalParams::getInstance().indexToMode(modeIndex);
+    GlobalParams::getInstance().setCurrentMode(GlobalParams::getInstance().indexToMode(modeIndex));
+    if(modeIndex==3){//guided mode ise
+        emit isGuidedModeOn(true);
+    }else{
+        emit isGuidedModeOn(false);
+    }
 }
 
 void MainInterface::handleGuidedMode(int altitude) {
     emit setAltitude(altitude);
     emit AltitudeChanged(static_cast<float>(altitude));
+
 }
 
 void MainInterface::handleEngineStateChanged(bool isEngineOn) {
@@ -128,32 +134,32 @@ void MainInterface::handleEngineStateChanged(bool isEngineOn) {
 }
 
 void MainInterface::handleSecurityStateChanged(bool isArmed) {
-    uiStateManager->handleSecurityState(isArmed, ui->Arm_Button);
-    GlobalParams::getInstance().isArmed=isArmed;
-    if(GlobalParams::getInstance().isArmed){
-        emit Arm();
-    }else{
-        emit disArm();
-    }
-    setUI();
+    GlobalParams::getInstance().setArmState(isArmed);
+        uiStateManager->handleSecurityState(isArmed, ui->Arm_Button);
+        if(isArmed){
+            emit Arm();
+        }else{
+            emit disArm();
+        }
+        setUI();
 }
 
 void MainInterface::handleConnectionSignal(bool connectionState, const QString &ip, int port) {
-    //set_SITL();
+    set_SITL();
     // Only proceed if there's an actual state change
-    if (GlobalParams::getInstance().TCP_CONNECTION_STATE != connectionState) {
+    if (GlobalParams::getInstance().getTcpConnectionState() != connectionState) {
         emit TCP_Connection_State(connectionState, ip, port);
     }
 
     // Update UI only if the desired state was achieved
-    if (GlobalParams::getInstance().TCP_CONNECTION_STATE == connectionState) {
+    if (GlobalParams::getInstance().getTcpConnectionState() == connectionState) {
         if (connectionState) {
-            GlobalParams::getInstance().TCP_Current_port = port;
-            GlobalParams::getInstance().TCP_Current_ip = ip;
+            GlobalParams::getInstance().setTcpPort(port);
+            GlobalParams::getInstance().setTcpIp(ip);
         }
     }
     setTCPButton(connectionState);
-    emit updateConnectionState(GlobalParams::getInstance().TCP_CONNECTION_STATE);
+    emit updateConnectionState(GlobalParams::getInstance().getTcpConnectionState());
 }
 void MainInterface::setTCPButton(bool TCP_CONNECTION_STATE){
     uiStateManager->handleConnectionState(TCP_CONNECTION_STATE, ui->Tcp_Button);
@@ -163,12 +169,12 @@ void MainInterface::setTCPButton(bool TCP_CONNECTION_STATE){
 void MainInterface::setUI(){
     widgetManager->closeAllExcept(nullptr);
     widgetManager->setVisibility(ui->ThrottleWidget, ui->main_Frame,
-                                 GlobalParams::getInstance().TCP_CONNECTION_STATE && ui->ThrottleWidget->isVisible() && GlobalParams::getInstance().isArmed);
+                                 GlobalParams::getInstance().getTcpConnectionState() && ui->ThrottleWidget->isVisible() && GlobalParams::getInstance().getArmState());
     widgetManager->setVisibility(ui->CHANGE_ALTITUDE_WIDGET, ui->main_Frame,
-                                 GlobalParams::getInstance().TCP_CONNECTION_STATE && ui->CHANGE_ALTITUDE_WIDGET->isVisible() && GlobalParams::getInstance().isArmed);
-    ui->Arm_Button->setEnabled(GlobalParams::getInstance().TCP_CONNECTION_STATE);
-    ui->Motor_Button->setEnabled(GlobalParams::getInstance().TCP_CONNECTION_STATE && GlobalParams::getInstance().isArmed);
-    ui->Mode_Button->setEnabled(GlobalParams::getInstance().TCP_CONNECTION_STATE && GlobalParams::getInstance().isArmed);
+                                 GlobalParams::getInstance().getTcpConnectionState() && ui->CHANGE_ALTITUDE_WIDGET->isVisible() && GlobalParams::getInstance().getArmState());
+    ui->Arm_Button->setEnabled(GlobalParams::getInstance().getTcpConnectionState());
+    ui->Motor_Button->setEnabled(GlobalParams::getInstance().getTcpConnectionState() && GlobalParams::getInstance().getArmState());
+    ui->Mode_Button->setEnabled(GlobalParams::getInstance().getTcpConnectionState() && GlobalParams::getInstance().getArmState());
 }
 void MainInterface::handleAltitudeChanged(int value) {
     emit AltitudeChanged(static_cast<float>(value));
@@ -176,7 +182,7 @@ void MainInterface::handleAltitudeChanged(int value) {
 
 void MainInterface::handleErrorDismissed() {
     errorManager->handleDismissal();
-    if(!GlobalParams::getInstance().allPanelsAvailable){
+    if(!GlobalParams::getInstance().getisAllPanelsAvailable()){
         ui->Errors_Frame->stackUnder(ui->main_Frame);
     }
 }
@@ -264,7 +270,7 @@ void MainInterface::on_zoom_Button_clicked() {
 void MainInterface::showMessage(const QString& title, const QString& message,//burayı düzelt
                                 const QString& color, int duration) {
     errorManager->handleError(title, message, color, duration);
-    if(GlobalParams::getInstance().allPanelsAvailable){
+    if(GlobalParams::getInstance().getisAllPanelsAvailable()){
         ui->Errors_Frame->raise();
     }
 }

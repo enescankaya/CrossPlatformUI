@@ -38,9 +38,9 @@ void ErrorManager::processQueue() {
 
         if (errorQueue.empty()) return; // Kuyruk boşsa çık
         // Tüm panellerin boş olup olmadığını kontrol et
-        GlobalParams::getInstance().allPanelsAvailable = std::all_of(panelsAvailability.begin(), panelsAvailability.end(), [](bool available) {
+        GlobalParams::getInstance().setisAllPanelsAvailable(std::all_of(panelsAvailability.begin(), panelsAvailability.end(), [](bool available) {
             return available;
-        });
+        }));
         size_t checkedPanels = 0;
         size_t index = currentPanelIndex;
 

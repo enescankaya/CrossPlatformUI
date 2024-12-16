@@ -15,6 +15,7 @@ Rectangle {
     property double heading: 0.0
     property Component comMarker: mapMarker
     property Component rightClickMarker: rightClickMapMarker
+    property bool isGuidedMode: false
     signal rightClickSignal(double lat, double lng)
     signal removerightClickSignal()
     Plugin {
@@ -25,7 +26,6 @@ Rectangle {
             value: "https://tile.openstreetmap.org/"
         }
     }
-
     Map {
         id: mapView
         anchors.fill: parent
@@ -39,7 +39,9 @@ Rectangle {
                 mapView.zoomLevel -= 1;
             }
         }
-
+    function changeMode(isGuidedMode) {
+            window.isGuidedMode=isGuidedMode;
+        }
         function zoomIn() {
             if (mapView.zoomLevel < 20) {
                 mapView.zoomLevel += 1;
@@ -92,6 +94,7 @@ Rectangle {
         }
 
         onClicked: function(mouse) {
+            if (window.isGuidedMode) {  // Sadece Guided modda çalışır
             if (mouse.button === Qt.RightButton) {
                            const clickedCoord = mapView.toCoordinate(Qt.point(mouse.x, mouse.y))
                            window.addRightClickMarker(clickedCoord.latitude, clickedCoord.longitude)
@@ -101,6 +104,7 @@ Rectangle {
                            window.removeRightClickMarker()
                            window.removerightClickSignal()
                        }
+            }
         }
     }
     function removeRightClickMarker() {

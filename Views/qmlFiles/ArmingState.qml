@@ -14,6 +14,9 @@ Item {
         isArmed=armState
         securityStateChanged(armState)
      }
+    function changeArmStateUI(armState) {
+        isArmed=armState
+     }
     Rectangle {
         anchors.fill: parent
         color: "#80000000"

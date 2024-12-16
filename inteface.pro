@@ -12,6 +12,9 @@ QT += core gui multimedia multimediawidgets
  QT += multimediawidgets
  QT += multimedia multimediawidgets
  QT += quick quickcontrols2
+ QT += quick location positioning
+ QT += core gui quick qml location positioning
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
@@ -23,12 +26,12 @@ CONFIG += c++17
 SOURCES += \
     Delegate/AnimationManager.cpp \
     Delegate/CameraScreen.cpp \
-    Models/GlobalParams.cpp \
     Delegate/MapScreen.cpp \
     Delegate/connectionmanager.cpp \
     Models/MavlinkCommunication.cpp \
     Models/TcpManager.cpp \
     Models/TcpWorker.cpp \
+    Models/TileLoader.cpp \
     Models/errormanager.cpp \
     Delegate/screenmanager.cpp \
     Delegate/uistatemanager.cpp \
@@ -44,6 +47,7 @@ HEADERS += \
     Headers/MavlinkCommunication.h \
     Headers/TcpManager.h \
     Headers/TcpWorker.h \
+    Headers/TileLoader.h \
     Headers/maininterface.h \
     Headers/errormanager.h \
     Headers/screenmanager.h \

@@ -58,6 +58,8 @@ public:
     void set_SITL();
 
 signals:
+    //Map
+    void isGuidedModeOn(QVariant isActive);
     // Navigation and HUD signals
     void updateHeading(QVariant heading);
     void setAltitude(QVariant altitude);

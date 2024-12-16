@@ -22,6 +22,9 @@ Item {
              currentModeIndex = modeIndex
              modeChanged(modes[modeIndex], modeIndex)
      }
+    function changeModeUI(modeIndex) {
+             currentModeIndex = modeIndex
+     }
     Rectangle {
         anchors.fill: parent
         color: "#80000000"  // Semi-transparent black
@@ -295,9 +298,9 @@ Item {
                                 drag.maximumX: parent.parent.width - parent.width
                                 onReleased: {
                                     if (guidedSlideHandle.x > parent.parent.width * 0.6) {
+                                        root.modeChanged("Guided", root.modes.indexOf("Guided"))
                                         guidedSlideHandle.x = parent.parent.width - guidedSlideHandle.width
                                         root.setGuidedMode(root.guidedAltitude)
-                                        root.modeChanged("Guided", root.modes.indexOf("Guided"))
                                         root.isGuidedModeActive = false
                                         guidedSlideHandle.x = 0
                                     } else {

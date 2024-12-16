@@ -7,7 +7,7 @@
 #include <TcpManager.h>
 #include <Headers/GlobalParams.h>
 #include <MavlinkCommunication.h>
-class MainInterface; // MainInterface sınıfını önceden bildirelim
+class MainInterface;
 class TcpManager;
 class ConnectionManager : public QObject {
     Q_OBJECT

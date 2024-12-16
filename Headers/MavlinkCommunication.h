@@ -51,6 +51,19 @@ private:
     QElapsedTimer m_lastHeartbeat;
     static constexpr int MAX_HEARTBEAT_INTERVAL = 3000; // 3 seconds maximum interval
     void updateMavlinkSignalStrength();
+    std::atomic<bool> m_isArmed=true;
+
+    GlobalParams::Mode convertMavlinkMode(uint32_t custom_mode);
+
+    static const uint32_t MANUAL_MODE = 0;
+    static const uint32_t CIRCLE_MODE = 1;
+    static const uint32_t AUTO_MODE = 10;
+    static const uint32_t GUIDED_MODE = 15;
+    static const uint32_t TAXI_MODE = static_cast<uint32_t>(-1);
+    static const uint32_t RTL_MODE = 11;
+
+    mavlink_heartbeat_t heartbeat;
+
 signals:
 
 };

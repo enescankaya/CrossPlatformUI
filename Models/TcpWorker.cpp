@@ -45,7 +45,7 @@ void TcpWorker::handleConnect(const QString &ip, int port) {
     auto &globals = GlobalParams::getInstance();
 
     if (tcpSocket->state() == QAbstractSocket::ConnectedState) {
-        if (globals.TCP_Current_ip == ip && globals.TCP_Current_port == port) {
+        if (globals.getTcpIp() == ip && globals.getTcpPort() == port) {
             emit showMessage("Connection Status", "Already connected to this address", "blue", 3000);
             return;
         }
@@ -59,9 +59,9 @@ void TcpWorker::handleConnect(const QString &ip, int port) {
 
     if (tcpSocket->waitForConnected(CONNECTION_TIMEOUT)) {
         stopConnectionTimer();
-        globals.TCP_Current_ip = ip;
-        globals.TCP_Current_port = port;
-        globals.TCP_CONNECTION_STATE = true;
+        globals.setTcpIp(ip);
+        globals.setTcpPort(port);
+        globals.setTcpConnectionState(true);
         emit connectionStateChanged(true);
     } else {
         stopConnectionTimer();
@@ -80,7 +80,7 @@ void TcpWorker::handleDisconnect() {
 
     if (tcpSocket->state() == QAbstractSocket::UnconnectedState ||
         tcpSocket->waitForDisconnected(CONNECTION_TIMEOUT)) {
-        globals.TCP_CONNECTION_STATE = false;
+        globals.setTcpConnectionState(false);
         emit connectionStateChanged(false);
     } else {
         emit showMessage("Error", "Failed to disconnect", "red", 3000);
@@ -109,7 +109,7 @@ QString TcpWorker::getErrorMessage(QAbstractSocket::SocketError socketError) {
 void TcpWorker::handleSocketError(QAbstractSocket::SocketError socketError) {
     auto &globals = GlobalParams::getInstance();
     emit showMessage("Connection Error", getErrorMessage(socketError), "red", 5000);
-    globals.TCP_CONNECTION_STATE = false;
+    globals.setTcpConnectionState(false);
     emit connectionStateChanged(false);
 
     tcpSocket->abort();
@@ -120,11 +120,11 @@ void TcpWorker::handleStateChange(QAbstractSocket::SocketState socketState) {
 
     switch (socketState) {
     case QAbstractSocket::UnconnectedState:
-        globals.TCP_CONNECTION_STATE = false;
+        globals.setTcpConnectionState(false);
         emit connectionStateChanged(false);
         break;
     case QAbstractSocket::ConnectedState:
-        globals.TCP_CONNECTION_STATE = true;
+        globals.setTcpConnectionState(true);
         emit connectionStateChanged(true);
         break;
     default:
@@ -137,7 +137,7 @@ void TcpWorker::handleConnectionTimeout() {
 
     if (tcpSocket->state() != QAbstractSocket::ConnectedState) {
         tcpSocket->abort();
-        globals.TCP_CONNECTION_STATE = false;
+        globals.setTcpConnectionState(false);
         emit connectionStateChanged(false);
         emit showMessage("Error", "Connection attempt timed out", "red", 3000);
     }
