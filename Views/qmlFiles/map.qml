@@ -154,7 +154,7 @@ Rectangle {
                 coordinate: QtPositioning.coordinate(lat, lng)
             })
             mapView.addMapItem(rightClickMarkerItem)
-            rightClickMarkerItem.sourceItem.source = "https://cdn3.iconfinder.com/data/icons/transport-29/100/18-512.png"
+            rightClickMarkerItem.sourceItem.source = "qrc:/Resources/destination.png"
         }
     }
 
@@ -167,7 +167,7 @@ Rectangle {
             coordinate: QtPositioning.coordinate(window.oldLat, window.oldLng)
             sourceItem: Image {
                 id: image
-                source: "https://cdn.pixabay.com/photo/2014/04/03/00/40/airplane-309073_1280.png"
+                source: "qrc:/Resources/uavIcon.png"
                 width: 32
                 height: 32
             }
@@ -182,7 +182,7 @@ Rectangle {
             anchorPoint.y: image.height / 2
             sourceItem: Image {
                 id: image
-                source: "https://cdn3.iconfinder.com/data/icons/transport-29/100/18-512.png"
+                source: "qrc:/Resources/destination.png"
                 width: 32
                 height: 32
             }

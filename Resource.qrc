@@ -46,5 +46,7 @@
         <file>Resources/info.png</file>
         <file>SITL.bat</file>
         <file>Resources/mavlinkIcon.png</file>
+        <file>Resources/destination.png</file>
+        <file>Resources/uavIcon.png</file>
     </qresource>
 </RCC>

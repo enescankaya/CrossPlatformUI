@@ -291,7 +291,7 @@ void MavlinkCommunication::SetThrottle(double throttlePercent) {
             emit sendMessage(msg);
 
             // 2 HZ FREKANS(MISSION PLANNER ILE ESITLENDI)
-            QThread::msleep(500);
+            QThread::msleep(100);
         }
     }
     });
