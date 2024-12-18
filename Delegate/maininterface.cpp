@@ -23,7 +23,7 @@ MainInterface::MainInterface(QWidget *parent)
     setUI();
 }
 void MainInterface::set_SITL(){
-    QString batFilePath ="C:/Users/PC_6270/Desktop/Enes/QtAndroidInterfaceProject/inteface/SITL.bat";
+    QString batFilePath ="C:/Users/PC_6270/Desktop/Enes/QtAndroidInterfaceProject/inteface/SITL.bat";//Process olduğu için local path.
     QProcess *process = new QProcess(this);
     process->start(batFilePath);
     if (!process->waitForStarted()) {
@@ -68,7 +68,7 @@ void MainInterface::setupQmlWidgets() {
         {ui->fuel_state_Widget, "fuelicon.qml"},
         {ui->change_Mode, "ChangeMode.qml"},
         {ui->ThrottleWidget, "Throttle.qml"},
-        {ui->Connection_Widget, "Tcp_Connection.qml"},
+        {ui->Connection_Widget, "TCP_UDP_Connection.qml"},
         {ui->HUD_Widget, "HUD.qml"},
         {ui->Signal_Widget, "Signal.qml"},
         {ui->Arm_Widget, "ArmingState.qml"},
@@ -145,8 +145,9 @@ void MainInterface::handleSecurityStateChanged(bool isArmed) {
 }
 
 void MainInterface::handleConnectionSignal(bool connectionState, const QString &ip, int port) {
-    set_SITL();
-    // Only proceed if there's an actual state change
+    if(port==5760){
+        set_SITL();
+    }    // Only proceed if there's an actual state change
     if (GlobalParams::getInstance().getTcpConnectionState() != connectionState) {
         emit TCP_Connection_State(connectionState, ip, port);
     }
@@ -286,27 +287,23 @@ void MainInterface::showTime(bool isActive) {
 
     if (isActive) {
         if (!wasActive) {
-            // Sayaç tekrar başlıyorsa, sıfırdan başlat
             elapsedTime = QTime(0, 0, 0);
             ui->UAV_State_Label->setText("FLYING");
         }
 
-        // Her tetiklenmede bir saniye ekle
         elapsedTime = elapsedTime.addMSecs(500);
 
-        // Sayaç değerini görüntüle
         QString timeString = elapsedTime.toString("HH:mm:ss");
         ui->Counter->display(timeString);
 
-        wasActive = true; // Durumu güncelle
+        wasActive = true;
     } else {
         if (wasActive) {
-            // Aktif değilse, display'i sıfırla
             ui->Counter->display("00:00:00");
             ui->UAV_State_Label->setText("READY TO FLY");
         }
 
-        wasActive = false; // Durumu güncelle
+        wasActive = false;
     }
 }
 

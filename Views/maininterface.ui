@@ -1460,7 +1460,7 @@ background: &quot;#40000000&quot;
        <x>450</x>
        <y>80</y>
        <width>191</width>
-       <height>131</height>
+       <height>161</height>
       </rect>
      </property>
      <property name="sizePolicy">

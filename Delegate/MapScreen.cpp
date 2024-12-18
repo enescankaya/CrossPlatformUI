@@ -6,7 +6,14 @@ MapScreen::MapScreen(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ShowScrenn)
 {
+    // Performans optimizasyonları
+    qputenv("QML_DISK_CACHE_ENABLE", "true");
+    qputenv("QT_QUICK_THREADS", "12");
     ui->setupUi(this);
+
+    // QQuickWidget optimizasyonları
+    ui->quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
+
     ui->quickWidget->setSource(QUrl(QStringLiteral("qrc:/Views/qmlFiles/map.qml")));
     ui->quickWidget->show();
     qmlRootObject = ui->quickWidget->rootObject();

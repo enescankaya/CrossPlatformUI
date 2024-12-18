@@ -3,6 +3,10 @@
 
 #include "ui_MapScreen.h"
 #include <QWidget>
+#include <QQuickWidget>
+#include <QSurfaceFormat>
+#include <QStandardPaths>
+#include <QDir>
 
 namespace Ui {
 class MapScreen;

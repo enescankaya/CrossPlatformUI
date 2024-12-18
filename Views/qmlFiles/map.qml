@@ -10,8 +10,8 @@ Rectangle {
     height: 480
     property MapQuickItem markerItem: null
     property MapQuickItem rightClickMarkerItem: null  // Separate marker for right-click
-    property double oldLat: 39.9334
-    property double oldLng: 32.8597
+    property double oldLat: 40.7872
+    property double oldLng: 26.6068
     property double heading: 0.0
     property Component comMarker: mapMarker
     property Component rightClickMarker: rightClickMapMarker
@@ -21,10 +21,19 @@ Rectangle {
     Plugin {
         id: mapPlugin
         name: "osm"
-        PluginParameter {
-            name: "osm.mapping.custom.host";
-            value: "https://tile.openstreetmap.org/"
-        }
+        parameters: [
+            PluginParameter { name: "osm.mapping.custom.host"; value: "https://a.tile.openstreetmap.org/${z}/${x}/${y}.png" },
+            PluginParameter { name: "osm.mapping.offline.directory"; value: "C:/Users/PC_6270/Desktop/AllTiles/tiles_smallsize" },
+            PluginParameter { name: "osm.mapping.providersrepository.disabled"; value: true },
+            PluginParameter { name: "osm.mapping.cache.directory"; value: "C:/Users/PC_6270/Desktop/AllTiles/cache" },
+            PluginParameter { name: "osm.mapping.cache.disk.size"; value: 100000000 },
+            PluginParameter { name: "osm.mapping.host.numthreads"; value: 3 },
+            PluginParameter { name: "osm.mapping.cache.inmemory.size"; value: 250 },
+            PluginParameter { name: "osm.mapping.providers.filter"; value: "nocustom" },
+            PluginParameter { name: "osm.mapping.cache.texture.size"; value: 250 },
+            PluginParameter { name: "osm.mapping.highdpi_tiles"; value: true },
+            PluginParameter { name: "osm.mapping.prefetch.neighboring"; value: true }
+        ]
     }
     Map {
         id: mapView
@@ -33,6 +42,12 @@ Rectangle {
         center: QtPositioning.coordinate(window.oldLat, window.oldLng)
         zoomLevel: 15
         activeMapType: supportedMapTypes[6]
+        minimumZoomLevel: 1
+        maximumZoomLevel: 16
+        copyrightsVisible: false
+        Component.onCompleted: {
+            mapView.activeMapType = supportedMapTypes[1];
+        }
     }
     function zoomOut() {
             if (mapView.zoomLevel > 2) {
