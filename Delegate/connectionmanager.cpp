@@ -5,6 +5,7 @@
 ConnectionManager::ConnectionManager(QObject* parent) :
     QObject(parent),
     tcpManager(new TcpManager(this)),
+    udpManager(new UdpManager(this)),
     mavlink_Class(new MavlinkCommunication(this))
 {
 
@@ -29,6 +30,8 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     auto rootObjectConnection = mainInterface->ui->Connection_Widget->rootObject();
     connect(rootObjectConnection, SIGNAL(connectionSignal(bool,QString,int)),
             mainInterface, SLOT(handleConnectionSignal(bool,QString,int)));
+    connect(rootObjectConnection, SIGNAL(udpConnectionSignal(bool,QString,int)),
+            mainInterface, SLOT(handleUDPConnectionSignal(bool,QString,int)));
     connect(mainInterface, SIGNAL(updateConnectionState(QVariant)),
             rootObjectConnection, SLOT(onExternalConnectionSignal(QVariant)));
 
@@ -97,17 +100,10 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
 
     //Singleton
     connect(&GlobalParams::getInstance(), &GlobalParams::showMessage,mainInterface, &MainInterface::showMessage);
-
-    //TCP Connections
-    connect(mainInterface, &MainInterface::TCP_Connection_State,tcpManager, &TcpManager::requestConnection);
-    connect(tcpManager, &TcpManager::showMessage,mainInterface, &MainInterface::showMessage);
-    connect(tcpManager, &TcpManager::connectionStateChanged,mainInterface, &MainInterface::updateConnectionState);
-    connect(tcpManager, &TcpManager::connectionStateChanged,mainInterface, &MainInterface::setTCPButton);
+    connect(&GlobalParams::getInstance(), &GlobalParams::setTCPButton,mainInterface, &MainInterface::setTCPButton);
+    connect(&GlobalParams::getInstance(), &GlobalParams::setUDPButton,mainInterface, &MainInterface::setUDPButton);
 
     //Mavlink Connections
-    connect(mavlink_Class,&MavlinkCommunication::sendMessage,tcpManager,&TcpManager::sendMavlinkMessage,Qt::QueuedConnection);
-    connect(mavlink_Class,&MavlinkCommunication::sendMessage,tcpManager,&TcpManager::sendMavlinkMessage,Qt::QueuedConnection);
-    connect(tcpManager,&TcpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage,Qt::QueuedConnection);
     connect(mainInterface,&MainInterface::Arm,mavlink_Class,&MavlinkCommunication::Arm,Qt::QueuedConnection);
     connect(mainInterface,&MainInterface::disArm,mavlink_Class,&MavlinkCommunication::disArm,Qt::QueuedConnection);
     connect(mainInterface,&MainInterface::changeMode,mavlink_Class,&MavlinkCommunication::changeMode,Qt::QueuedConnection);
@@ -115,9 +111,46 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     connect(mavlink_Class,&MavlinkCommunication::updateHeading,mainInterface,&MainInterface::updateHeading,Qt::QueuedConnection);
     connect(mavlink_Class,&MavlinkCommunication::updateInfoHud,mainInterface,&MainInterface::UpdateInfos,Qt::QueuedConnection);
     connect(mavlink_Class,&MavlinkCommunication::updateClock,mainInterface,&MainInterface::showTime,Qt::QueuedConnection);
+    connect(mavlink_Class, &MavlinkCommunication::showWarningMessage, mainInterface, &MainInterface::showWarningMessage);
     //Map
     connect(mavlink_Class, SIGNAL(setMap(QVariant,QVariant,QVariant)), GlobalParams::getInstance().getMapScreen()->qmlRootObject, SLOT(addMarker(QVariant,QVariant,QVariant)),Qt::QueuedConnection);
     connect(GlobalParams::getInstance().getMapScreen()->qmlRootObject, SIGNAL(rightClickSignal(double,double)), mavlink_Class, SLOT(Go_Coordinate(double,double)),Qt::QueuedConnection);
     connect(GlobalParams::getInstance().getMapScreen()->qmlRootObject, SIGNAL(removerightClickSignal()), mavlink_Class, SLOT(Remove_Coordinate()),Qt::QueuedConnection);
     connect(mainInterface, SIGNAL(isGuidedModeOn(QVariant)), GlobalParams::getInstance().getMapScreen()->qmlRootObject, SLOT(changeMode(QVariant)));
+    //Connection TYPES
+    setUpConnections_For_Connections(mainInterface);
+}
+void ConnectionManager::setUpConnections_For_Connections(MainInterface* mainInterface){
+     if(GlobalParams::getInstance().getActiveConnectionType()==GlobalParams::ConnectionType::TCP && CurrentConnection!=GlobalParams::ConnectionType::TCP){
+         //Disconnect UDP Connections
+        disconnect(mainInterface, &MainInterface::UDP_Connection_State,udpManager, &UdpManager::requestConnection);
+        disconnect(udpManager, &UdpManager::showMessage,mainInterface, &MainInterface::showMessage);
+        disconnect(udpManager, &UdpManager::connectionStateChanged,mainInterface, &MainInterface::updateConnectionState);
+        disconnect(udpManager,&UdpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage);
+        disconnect(mavlink_Class,&MavlinkCommunication::sendMessage,udpManager,&UdpManager::sendMavlinkMessage);
+         //TCP Connections
+        connect(mainInterface, &MainInterface::TCP_Connection_State,tcpManager, &TcpManager::requestConnection);
+        connect(tcpManager, &TcpManager::showMessage,mainInterface, &MainInterface::showMessage);
+        connect(tcpManager, &TcpManager::connectionStateChanged,mainInterface, &MainInterface::updateConnectionState);
+        connect(tcpManager,&TcpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage,Qt::QueuedConnection);
+        connect(mavlink_Class,&MavlinkCommunication::sendMessage,tcpManager,&TcpManager::sendMavlinkMessage,Qt::QueuedConnection);
+        CurrentConnection=GlobalParams::ConnectionType::TCP;
+        return;
+     }
+     if(GlobalParams::getInstance().getActiveConnectionType()==GlobalParams::ConnectionType::UDP && CurrentConnection!=GlobalParams::ConnectionType::UDP){
+         // Disconnect TCP Connections
+        disconnect(mainInterface, &MainInterface::TCP_Connection_State,tcpManager, &TcpManager::requestConnection);
+        disconnect(tcpManager, &TcpManager::showMessage,mainInterface, &MainInterface::showMessage);
+        disconnect(tcpManager, &TcpManager::connectionStateChanged,mainInterface, &MainInterface::updateConnectionState);
+        disconnect(tcpManager, &TcpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage);
+        disconnect(mavlink_Class, &MavlinkCommunication::sendMessage,tcpManager,&TcpManager::sendMavlinkMessage);
+         //UDP Connections
+        connect(mainInterface, &MainInterface::UDP_Connection_State,udpManager, &UdpManager::requestConnection);
+        connect(udpManager, &UdpManager::showMessage,mainInterface, &MainInterface::showMessage);
+        connect(udpManager, &UdpManager::connectionStateChanged,mainInterface, &MainInterface::updateConnectionState);
+        connect(udpManager,&UdpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage,Qt::QueuedConnection);
+        connect(mavlink_Class,&MavlinkCommunication::sendMessage,udpManager,&UdpManager::sendMavlinkMessage,Qt::QueuedConnection);
+        CurrentConnection=GlobalParams::ConnectionType::UDP;
+        return;
+     }
 }

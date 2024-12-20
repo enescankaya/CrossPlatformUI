@@ -72,6 +72,7 @@ signals:
     void changeMode(GlobalParams::Mode currentMode);
     //Mavlink Signals
     void TCP_Connection_State(bool connectionState, const QString &ip, int port);
+    void UDP_Connection_State(bool connectionState, const QString &ip, int port);
     // Error handling signals
     void showError(QVariant title, QVariant message, QVariant color, QVariant duration);
     void showError2(QVariant title, QVariant message, QVariant color, QVariant duration);
@@ -84,6 +85,7 @@ public slots:
     void handleEngineStateChanged(bool isEngineOn);
     void handleSecurityStateChanged(bool isArmed);
     void handleConnectionSignal(bool connectionState, const QString &ip, int port);
+    void handleUDPConnectionSignal(bool connectionState, const QString &ip, int port);
     void handleAltitudeChanged(int value);
     void handleErrorDismissed();
     void showMessage(const QString& title, const QString& message,
@@ -99,10 +101,13 @@ public slots:
     void on_uavIcons_Button_clicked();
     void on_Swapping_Button_clicked();
     void setTCPButton(bool TCP_CONNECTION_STATE);
+    void setUDPButton(bool TCP_CONNECTION_STATE);
     void UpdateInfos(uint16_t throttle,float airspeed,float groundspeed,int32_t rpm_value);
 
     //LCD time
     void showTime(bool isActive);
+    //warnings
+    void showWarningMessage(QString warningMessage);
 
 private:
     // Setup methods

@@ -43,7 +43,17 @@ void MavlinkCommunication::updateMavlinkSignalStrength() {
         GlobalParams::getInstance().setCurrentMode(currentMode);
         emit setMode(GlobalParams::getInstance().getModeIndex(static_cast<int>(currentMode)));
     }
+
+    // STATUSTEXT zamanını kontrol edin
+    if (m_lastStatusMessage.isValid() && m_lastStatusMessage.elapsed() > 3000) {
+        emit showWarningMessage(" ");
+        m_lastStatusMessage.invalidate(); // Tekrar tetiklenmeyi önlemek için geçersiz yap
+    }
+
     emit updateClock(isArmed);
+    //qDebug() << QString::number(static_cast<int>(GlobalParams::getInstance().getActiveConnectionType()));
+    //qDebug() << GlobalParams::getInstance().getConnectionState();
+
 }
 
 void MavlinkCommunication::processMAVLinkMessage(const mavlink_message_t& msg) {
@@ -70,10 +80,30 @@ void MavlinkCommunication::processMAVLinkMessage(const mavlink_message_t& msg) {
         case MAVLINK_MSG_ID_HEARTBEAT:
             handleHeartbeat(msg);
             break;
+        case MAVLINK_MSG_ID_STATUSTEXT:
+            handleStatusText(msg);
+            break;
         default:
             break;
         }
     });
+}
+
+void MavlinkCommunication::handleStatusText(const mavlink_message_t& msg) {
+    static QString previousMessage = "firstMessage";
+
+    mavlink_statustext_t statustext;
+    mavlink_msg_statustext_decode(&msg, &statustext);
+    QString currentMessage = QString::fromLatin1(statustext.text);
+
+    // Kritik mesaj kontrolü
+    if ((statustext.severity <= MAV_SEVERITY_WARNING || currentMessage.contains("SIM Hit ground at")) &&
+        !currentMessage.contains(previousMessage)) {
+        emit showWarningMessage(currentMessage);
+        previousMessage = currentMessage;
+        // Yeni mesaj alındığı için zamanlayıcıyı sıfırla
+        m_lastStatusMessage.restart();
+    }
 }
 
 void MavlinkCommunication::handleInfos(const mavlink_message_t& msg) {
@@ -136,7 +166,7 @@ void MavlinkCommunication::handleAttitude(const mavlink_message_t& msg) {
 }
 void MavlinkCommunication::disArm(){
     QFuture<void> future = QtConcurrent::run([=]() {
-    if (GlobalParams::getInstance().getTcpConnectionState() == true) {
+    if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
         mavlink_msg_command_long_pack(MAV_TYPE_GCS, MAV_AUTOPILOT_GENERIC, &msg, 1, 1, MAV_CMD_COMPONENT_ARM_DISARM, 1, 0, 21196, 0, 0, 0, 0, 0);
         emit sendMessage(msg);
@@ -147,17 +177,16 @@ void MavlinkCommunication::disArm(){
 }
 void MavlinkCommunication::Arm(){
     QFuture<void> future = QtConcurrent::run([=]() {
-    if (GlobalParams::getInstance().getTcpConnectionState() == true) {
+    if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
         mavlink_msg_command_long_pack(MAV_TYPE_GCS, MAV_AUTOPILOT_GENERIC, &msg, 1, 1, MAV_CMD_COMPONENT_ARM_DISARM, 1, 1, 2989, 0, 0, 0, 0, 0);
         emit sendMessage(msg);
     }
     });
-
 }
 void MavlinkCommunication::changeMode(GlobalParams::Mode currentMode) {
     QFuture<void> future = QtConcurrent::run([=]() {
-    if (GlobalParams::getInstance().getTcpConnectionState() == true) {
+    if (GlobalParams::getInstance().getConnectionState() == true) {
     mavlink_message_t msg;
     mavlink_msg_command_long_pack(MAV_TYPE_GCS, MAV_AUTOPILOT_GENERIC, &msg,
                                   1, 1, // Target system and component
@@ -173,7 +202,7 @@ void MavlinkCommunication::changeMode(GlobalParams::Mode currentMode) {
 void MavlinkCommunication::SetAltitude(float altitude) {
     GlobalParams::getInstance().setAltitude(altitude);
     QFuture<void> future = QtConcurrent::run([=]() {
-    if (GlobalParams::getInstance().getTcpConnectionState() == true) {
+    if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
 
         // Position mask - only enable altitude change
@@ -216,7 +245,7 @@ void MavlinkCommunication::SetAltitude(float altitude) {
 }
 void MavlinkCommunication::Go_Coordinate(double lat, double lng) {
     QFuture<void> future = QtConcurrent::run([=]() {
-    if (GlobalParams::getInstance().getTcpConnectionState() == true) {
+    if (GlobalParams::getInstance().getConnectionState() == true) {
     // Convert latitude and longitude to MAVLink's expected format
     int32_t lat_mav = static_cast<int32_t>(lat * 1e7);
     int32_t lng_mav = static_cast<int32_t>(lng * 1e7);
@@ -244,7 +273,7 @@ void MavlinkCommunication::Go_Coordinate(double lat, double lng) {
 }
 void MavlinkCommunication::Remove_Coordinate() {
     QFuture<void> future = QtConcurrent::run([=]() {
-    if (GlobalParams::getInstance().getTcpConnectionState() == true) {
+    if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
         mavlink_msg_command_long_pack(MAV_TYPE_GCS, MAV_AUTOPILOT_GENERIC, &msg, 1, 1,
                                       MAV_CMD_DO_SET_MODE, 0, 217, static_cast<int>(GlobalParams::Mode::Circle), 0, 0, 0, 0, 0);//12=> loiter mode
@@ -256,8 +285,8 @@ void MavlinkCommunication::Remove_Coordinate() {
 void MavlinkCommunication::SetThrottle(double throttlePercent) {
     GlobalParams::getInstance().setThrottleValue(static_cast<float>(throttlePercent));
     QFuture<void> future = QtConcurrent::run([=]() {
-    if (GlobalParams::getInstance().getTcpConnectionState() == true) {
-        while(GlobalParams::getInstance().getCurrentMode() == GlobalParams::Mode::Manual && GlobalParams::getInstance().getTcpConnectionState()) {
+    if (GlobalParams::getInstance().getConnectionState() == true) {
+        while(GlobalParams::getInstance().getCurrentMode() == GlobalParams::Mode::Manual && GlobalParams::getInstance().getConnectionState()) {
             // Yüzdelik değeri PWM değerine çevirme (1000-2000 PWM aralığı)
             uint16_t pwmValue = static_cast<uint16_t>(1000 + (static_cast<float>(GlobalParams::getInstance().getThrottleValue()) * 10));
             // PWM değerini sınırla

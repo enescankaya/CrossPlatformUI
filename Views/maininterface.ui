@@ -1547,6 +1547,31 @@ background: &quot;#40000000&quot;
       </item>
      </layout>
     </widget>
+    <widget class="QLabel" name="Warning_Label">
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>370</y>
+       <width>391</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color:&quot;#FD3C3C&quot;;
+font: 9pt &quot;#9A9EB1&quot;;
+font-weight: bold; /* Kalın yazı */
+</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>

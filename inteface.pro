@@ -31,6 +31,8 @@ SOURCES += \
     Models/MavlinkCommunication.cpp \
     Models/TcpManager.cpp \
     Models/TcpWorker.cpp \
+    Models/UdpManager.cpp \
+    Models/UdpWorker.cpp \
     Models/errormanager.cpp \
     Delegate/screenmanager.cpp \
     Delegate/uistatemanager.cpp \
@@ -46,6 +48,8 @@ HEADERS += \
     Headers/MavlinkCommunication.h \
     Headers/TcpManager.h \
     Headers/TcpWorker.h \
+    Headers/UdpManager.h \
+    Headers/UdpWorker.h \
     Headers/maininterface.h \
     Headers/errormanager.h \
     Headers/screenmanager.h \

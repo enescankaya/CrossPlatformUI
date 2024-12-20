@@ -63,6 +63,8 @@ void TcpWorker::handleConnect(const QString &ip, int port) {
         globals.setTcpPort(port);
         globals.setTcpConnectionState(true);
         emit connectionStateChanged(true);
+            GlobalParams::getInstance().setActiveConnectionType(GlobalParams::ConnectionType::TCP);
+
     } else {
         stopConnectionTimer();
         emit showMessage("Error", "Connection failed", "red", 3000);
@@ -82,6 +84,7 @@ void TcpWorker::handleDisconnect() {
         tcpSocket->waitForDisconnected(CONNECTION_TIMEOUT)) {
         globals.setTcpConnectionState(false);
         emit connectionStateChanged(false);
+        GlobalParams::getInstance().setActiveConnectionType(GlobalParams::ConnectionType::None);
     } else {
         emit showMessage("Error", "Failed to disconnect", "red", 3000);
     }

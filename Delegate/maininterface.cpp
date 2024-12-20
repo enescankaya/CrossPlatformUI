@@ -8,7 +8,9 @@
 MainInterface::MainInterface(QWidget *parent)
     : QMainWindow(parent)
     , ui(std::make_unique<Ui::BAYKARHP>())
-    , currentImageIndex(6) {
+    , currentImageIndex(6),
+    process(new QProcess(this))
+    {
 
     ui->setupUi(this);
 
@@ -22,17 +24,18 @@ MainInterface::MainInterface(QWidget *parent)
     ui->Recording_Label->setVisible(false);
     setUI();
 }
-void MainInterface::set_SITL(){
-    QString batFilePath ="C:/Users/PC_6270/Desktop/Enes/QtAndroidInterfaceProject/inteface/SITL.bat";//Process olduğu için local path.
-    QProcess *process = new QProcess(this);
+void MainInterface::set_SITL()
+{
+    QString batFilePath = "C:/Users/PC_6270/Desktop/Enes/QtAndroidInterfaceProject/inteface/SITL.bat";
     process->start(batFilePath);
+    // Çalışmanın başlatıldığını kontrol et
     if (!process->waitForStarted()) {
         emit showError("Hata", "SITL.bat başlatılamadı!", "red", 2000);
-            } else {
-        emit showError("Hata", "SITL.bat başarıyla başlatıldı!", "", 2000);
+    } else {
+        emit showError("Bilgi", "SITL.bat başarıyla başlatıldı!", "", 2000);
     }
-    // BAT dosyasını çalıştır
 }
+
 void MainInterface::setupManagers() {
     // Initialize all managers with smart pointers
     screenManager = std::make_unique<ScreenManager>(ui->small_Frame, ui->main_Frame);
@@ -58,6 +61,10 @@ void MainInterface::setupManagers() {
     }
     // Configure connection manager
     connectionManager->setupConnections(this);
+}
+
+void MainInterface::showWarningMessage(QString warningMessage){
+    ui->Warning_Label->setText(warningMessage);
 }
 
 void MainInterface::setupQmlWidgets() {
@@ -145,37 +152,69 @@ void MainInterface::handleSecurityStateChanged(bool isArmed) {
 }
 
 void MainInterface::handleConnectionSignal(bool connectionState, const QString &ip, int port) {
+    GlobalParams::getInstance().setActiveConnectionType(GlobalParams::ConnectionType::TCP);
+    connectionManager->setUpConnections_For_Connections(this);
     if(port==5760){
-        set_SITL();
+        //set_SITL();
     }    // Only proceed if there's an actual state change
     if (GlobalParams::getInstance().getTcpConnectionState() != connectionState) {
+        GlobalParams::getInstance().setTcpPort(port);
+        GlobalParams::getInstance().setTcpIp(ip);
         emit TCP_Connection_State(connectionState, ip, port);
     }
 
     // Update UI only if the desired state was achieved
     if (GlobalParams::getInstance().getTcpConnectionState() == connectionState) {
         if (connectionState) {
-            GlobalParams::getInstance().setTcpPort(port);
-            GlobalParams::getInstance().setTcpIp(ip);
+            return;
         }
     }
-    setTCPButton(connectionState);
-    emit updateConnectionState(GlobalParams::getInstance().getTcpConnectionState());
+    //setTCPButton(connectionState);
+    //emit updateConnectionState(GlobalParams::getInstance().getTcpConnectionState());
+}
+void MainInterface::handleUDPConnectionSignal(bool connectionState, const QString &ip, int port) {
+    GlobalParams::getInstance().setActiveConnectionType(GlobalParams::ConnectionType::UDP);
+    connectionManager->setUpConnections_For_Connections(this);
+    if(port==5760){
+        //set_SITL();
+    }    // Only proceed if there's an actual state change
+    if (GlobalParams::getInstance().getUdpConnectionState() != connectionState) {
+        GlobalParams::getInstance().setUdpPort(port);
+        GlobalParams::getInstance().setUdpIp(ip);
+        emit UDP_Connection_State(connectionState, ip, port);
+    }
+
+    // Update UI only if the desired state was achieved
+    if (GlobalParams::getInstance().getUdpConnectionState() == connectionState) {
+        if (connectionState) {
+            return;
+        }
+    }
+    //setUDPButton(connectionState);
+    //emit updateConnectionState(GlobalParams::getInstance().getUdpConnectionState());
 }
 void MainInterface::setTCPButton(bool TCP_CONNECTION_STATE){
     uiStateManager->handleConnectionState(TCP_CONNECTION_STATE, ui->Tcp_Button);
+    ui->Tcp_Button->setText("TCP");
+    qDebug()<<"TCPayarlandı";
     setUI();
 }
-
+void MainInterface::setUDPButton(bool UDP_CONNECTION_STATE){
+    uiStateManager->handleConnectionState(UDP_CONNECTION_STATE, ui->Tcp_Button);
+    ui->Tcp_Button->setText("UDP");
+    qDebug()<<"UDPayarlandı";
+    setUI();
+}
 void MainInterface::setUI(){
     widgetManager->closeAllExcept(nullptr);
     widgetManager->setVisibility(ui->ThrottleWidget, ui->main_Frame,
-                                 GlobalParams::getInstance().getTcpConnectionState() && ui->ThrottleWidget->isVisible() && GlobalParams::getInstance().getArmState());
+                                 GlobalParams::getInstance().getConnectionState() && ui->ThrottleWidget->isVisible() && GlobalParams::getInstance().getArmState());
     widgetManager->setVisibility(ui->CHANGE_ALTITUDE_WIDGET, ui->main_Frame,
-                                 GlobalParams::getInstance().getTcpConnectionState() && ui->CHANGE_ALTITUDE_WIDGET->isVisible() && GlobalParams::getInstance().getArmState());
-    ui->Arm_Button->setEnabled(GlobalParams::getInstance().getTcpConnectionState());
-    ui->Motor_Button->setEnabled(GlobalParams::getInstance().getTcpConnectionState() && GlobalParams::getInstance().getArmState());
-    ui->Mode_Button->setEnabled(GlobalParams::getInstance().getTcpConnectionState() && GlobalParams::getInstance().getArmState());
+                                 GlobalParams::getInstance().getConnectionState() && ui->CHANGE_ALTITUDE_WIDGET->isVisible() && GlobalParams::getInstance().getArmState());
+    ui->Arm_Button->setEnabled(GlobalParams::getInstance().getConnectionState());
+    ui->Motor_Button->setEnabled(GlobalParams::getInstance().getConnectionState() && GlobalParams::getInstance().getArmState());
+    ui->Mode_Button->setEnabled(GlobalParams::getInstance().getConnectionState() && GlobalParams::getInstance().getArmState());
+    qDebug() <<GlobalParams::getInstance().getConnectionState();
 }
 void MainInterface::handleAltitudeChanged(int value) {
     emit AltitudeChanged(static_cast<float>(value));
@@ -208,7 +247,7 @@ void MainInterface::on_Arm_Button_clicked() {
 void MainInterface::on_Swapping_Button_clicked() {
     widgetManager->closeAllExcept(nullptr);
     screenManager->swapScreens();
-    screenManager->adjustVisibility(ui->videoSettings_Frame, ui->HUD_Widget, ui->Compass_Widget);
+    screenManager->adjustVisibility(ui->videoSettings_Frame, ui->HUD_Widget, ui->Compass_Widget,ui->Warning_Label);
     // Update UI element stacking order
     const std::vector<QWidget*> stackingOrder = {
         ui->UAV_State_Label,
@@ -307,4 +346,11 @@ void MainInterface::showTime(bool isActive) {
     }
 }
 
-MainInterface::~MainInterface() = default;
+MainInterface::~MainInterface(){
+    if (process) {
+        process->kill();
+        process->waitForFinished();
+        delete process;
+    }
+}
+

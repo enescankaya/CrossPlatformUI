@@ -26,14 +26,16 @@ void ScreenManager::swapScreens() {
     frameLayout1->addWidget(widget2);
 }
 
-void ScreenManager::adjustVisibility(QWidget* videoSettings, QWidget* hud, QWidget* compass) {
+void ScreenManager::adjustVisibility(QWidget* videoSettings, QWidget* hud, QWidget* compass, QLabel *warningLabel) {
     if (frameLayout2->itemAt(0)->widget() == cameraScreen) {
         videoSettings->raise();
         hud->show();
         compass->show();
+        warningLabel->raise();
     } else {
         videoSettings->stackUnder(smallFrame);
         hud->hide();
         compass->hide();
+        //warningLabel->hide();
     }
 }

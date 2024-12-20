@@ -14,6 +14,22 @@ class GlobalParams : public QObject {
     Q_OBJECT
 
 public:
+
+    enum class ConnectionType {
+        None=0,
+        TCP=1,
+        UDP=2
+    };
+
+    ConnectionType getActiveConnectionType() const {
+        QReadLocker lock(&m_lock);
+        return m_activeConnectionType;
+    }
+
+    void setActiveConnectionType(ConnectionType type) {
+        QWriteLocker lock(&m_lock);
+        m_activeConnectionType = type;
+    }
     static GlobalParams& getInstance() {
         static GlobalParams instance;
         return instance;
@@ -28,7 +44,12 @@ public:
     void setTcpConnectionState(bool state) {
         QWriteLocker lock(&m_lock);
         m_TCP_CONNECTION_STATE = state;
-        emit connectionStatusChanged(state);
+        CONNECTION_STATE=state;
+        emit setTCPButton(state);
+    }
+    bool getConnectionState() const {
+        QReadLocker lock(&m_lock);
+        return CONNECTION_STATE;
     }
 
     int getTcpPort() const {
@@ -175,6 +196,37 @@ public:
         QWriteLocker lock(&m_lock);
         m_mapScreen.reset(screen);
     }
+    bool getUdpConnectionState() const {
+        QReadLocker lock(&m_lock);
+        return m_UDP_CONNECTION_STATE;
+    }
+
+    void setUdpConnectionState(bool state) {
+        QWriteLocker lock(&m_lock);
+        m_UDP_CONNECTION_STATE = state;
+        CONNECTION_STATE=state;
+        emit setUDPButton(state);
+    }
+
+    int getUdpPort() const {
+        QReadLocker lock(&m_lock);
+        return m_UDP_Current_port;
+    }
+
+    void setUdpPort(int port) {
+        QWriteLocker lock(&m_lock);
+        m_UDP_Current_port = port;
+    }
+
+    QString getUdpIp() const {
+        QReadLocker lock(&m_lock);
+        return m_UDP_Current_ip;
+    }
+
+    void setUdpIp(const QString& ip) {
+        QWriteLocker lock(&m_lock);
+        m_UDP_Current_ip = ip;
+    }
 
     MapScreen* getMapScreen() const {
         QReadLocker lock(&m_lock);
@@ -182,10 +234,10 @@ public:
     }
 
 signals:
-    void connectionStatusChanged(bool connected);
     void showMessage(const QString& title, const QString& message,
                      const QString& color, int duration);
-
+    void setUDPButton(bool UDP_CONNECTION_STATE);
+    void setTCPButton(bool TCP_CONNECTION_STATE);
 protected:
     explicit GlobalParams(QObject *parent = nullptr) : QObject(parent) {
         initializeDefaultValues();
@@ -194,6 +246,8 @@ protected:
 private:
     void initializeDefaultValues() {
         m_TCP_CONNECTION_STATE = false;
+        m_UDP_CONNECTION_STATE=false;
+        CONNECTION_STATE=false;
         m_TCP_Current_port = -1;
         m_isArmed = true;
         m_currentMode = Mode::Manual;
@@ -214,6 +268,7 @@ private:
     // Thread-safe member variables
     mutable QReadWriteLock m_lock;
     std::atomic<bool> m_TCP_CONNECTION_STATE;
+    std::atomic<bool> CONNECTION_STATE;
     int m_TCP_Current_port;
     QString m_TCP_Current_ip;
     std::atomic<bool> m_isArmed;
@@ -226,6 +281,11 @@ private:
     double m_vertical_speed;
     std::unique_ptr<MapScreen> m_mapScreen;
     int32_t m_rpm;
+    std::atomic<bool> m_UDP_CONNECTION_STATE;
+    int m_UDP_Current_port;
+    QString m_UDP_Current_ip;
+    ConnectionType m_activeConnectionType{ConnectionType::None};
+
 };
 
 #endif // GLOBALPARAMS_H

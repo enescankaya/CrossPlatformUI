@@ -38,6 +38,7 @@ signals:
     void setMode(QVariant mode);
     void setMavlinkSignalValue(int value);
     void updateClock(bool isActive);
+    void showWarningMessage(QString warningMessage);
 
 private:
     QMutex mutex;
@@ -49,7 +50,9 @@ private:
     void handleInfos(const mavlink_message_t& msg);
     void handleFuelAndBatteryStatus(const mavlink_message_t& msg);
     void handleHeartbeat(const mavlink_message_t& msg);
+    void handleStatusText(const mavlink_message_t& msg);
     QElapsedTimer m_lastHeartbeat;
+    QElapsedTimer m_lastStatusMessage; // Son STATUSTEXT mesajını takip eder.
     static constexpr int MAX_HEARTBEAT_INTERVAL = 3000; // 3 seconds maximum interval
     void updateMavlinkSignalStrength();
     std::atomic<bool> m_isArmed=true;
