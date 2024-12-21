@@ -26,15 +26,13 @@ Rectangle {
             PluginParameter { name: "osm.mapping.offline.directory"; value: "C:/Users/PC_6270/Desktop/AllTiles/tiles_smallsize" },
             PluginParameter { name: "osm.mapping.providersrepository.disabled"; value: true },
             PluginParameter { name: "osm.mapping.cache.directory"; value: "C:/Users/PC_6270/Desktop/AllTiles/cache" },
-            PluginParameter { name: "osm.mapping.cache.disk.size"; value: 512000000  },
-            PluginParameter { name: "osm.mapping.host.numthreads"; value: 5 },
-            PluginParameter { name: "osm.mapping.cache.inmemory.size"; value: 512  },
+            PluginParameter { name: "osm.mapping.cache.disk.size"; value: 512000000 },
+            PluginParameter { name: "osm.mapping.host.numthreads"; value: 6 },
+            PluginParameter { name: "osm.mapping.cache.inmemory.size"; value: 512 },
             PluginParameter { name: "osm.mapping.providers.filter"; value: "nocustom" },
-            PluginParameter { name: "osm.mapping.cache.texture.size"; value: 512  },
+            PluginParameter { name: "osm.mapping.cache.texture.size"; value: 512 },
             PluginParameter { name: "osm.mapping.highdpi_tiles"; value: true },
-            PluginParameter { name: "osm.mapping.prefetch.neighboring"; value: true },
-            PluginParameter { name: "osm.mapping.cache.memory"; value: true }
-
+            PluginParameter { name: "osm.mapping.prefetch.neighboring"; value: true }
         ]
     }
     Map {
@@ -51,7 +49,6 @@ Rectangle {
             mapView.activeMapType = supportedMapTypes[1];
         }
     }
-
     function zoomOut() {
             if (mapView.zoomLevel > 2) {
                 mapView.zoomLevel -= 1;
