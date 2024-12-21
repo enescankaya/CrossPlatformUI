@@ -20,6 +20,15 @@ public:
         TCP=1,
         UDP=2
     };
+        int getMavlinkSignalStrength() const {
+        QReadLocker lock(&m_lock);
+            return m_Mavlink_Signal_Strength;
+    }
+
+    void setMavlinkSignalStrength(int value) {
+        QWriteLocker lock(&m_lock);
+        m_Mavlink_Signal_Strength = value;
+    }
 
     ConnectionType getActiveConnectionType() const {
         QReadLocker lock(&m_lock);
@@ -285,7 +294,7 @@ private:
     int m_UDP_Current_port;
     QString m_UDP_Current_ip;
     ConnectionType m_activeConnectionType{ConnectionType::None};
-
+    int m_Mavlink_Signal_Strength=0;
 };
 
 #endif // GLOBALPARAMS_H

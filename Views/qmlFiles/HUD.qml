@@ -13,6 +13,7 @@ Rectangle {
     property int altitude: 0 // Changed to integer
     property int pitchValue: 0
     property int rollValue: 0 // Added rollValue
+    property color rollColor: Math.abs(rollValue) > 45 ? "#FD3C3C" : "#21DF56"
 
     // C++ tarafından tetiklenecek slot fonksiyonu
     function updateValues(newAirspeed, newAltitude, newPitch, newRoll) {
@@ -22,17 +23,26 @@ Rectangle {
         rollValue = newRoll // Assign newRoll to rollValue
     }
     // Roll Value Display (Attitude Indicator'ın üstünde)
-    Text {
+    Rectangle {
         anchors {
             bottom: attitudeIndicator.top
             horizontalCenter: attitudeIndicator.horizontalCenter
             bottomMargin: 10
         }
-        color: "#21DF56"
-        font.pixelSize: 15
-        font.bold: false
-        font.family: "Arial"
-        text: "Roll: " + root.rollValue + "°"
+        width: rollText.width + 20
+        height: rollText.height + 10
+        color: Math.abs(root.rollValue) > 45 ? "#40FD3C3C" : "transparent"
+        radius: 5
+
+        Text {
+            id: rollText
+            anchors.centerIn: parent
+            color: root.rollColor
+            font.pixelSize: 15
+            font.bold: Math.abs(root.rollValue) > 45
+            font.family: "Arial"
+            text: "Roll: " + root.rollValue + "°"
+        }
     }
     // İrtifa göstergesi (Sol orta)
         Item {
@@ -282,49 +292,53 @@ Rectangle {
             }
         }
     // Attitude Indicator (Ladder - Ortalanmış)
-    Item {
-        id: attitudeIndicator
-        anchors {
-            verticalCenter: parent.verticalCenter
-            horizontalCenter: parent.horizontalCenter
-        }
-        width: parent.width
-        height: parent.height * 0.8
-
-        // Nişangah (Merkezde)
         Item {
-            id: aimCursor
-            anchors.centerIn: parent
-            width: parent.width * 0.2
-            height: parent.width * 0.2
-            readonly property int aimCursorRadius: width * 0.2
-
-            Canvas {
-                id: aimCursorCanvas
-                anchors.fill: parent
-                onPaint: {
-                    var ctx = getContext("2d")
-                    ctx.reset()
-                    ctx.strokeStyle = "#21DF56"
-                    ctx.lineWidth = 1
-                    ctx.beginPath()
-                    // Merkez çember (kesik çizgi)
-                    ctx.setLineDash([5, 5])
-                    ctx.arc(width / 2, height / 2, aimCursor.aimCursorRadius, 0, 2 * Math.PI)
-                    ctx.stroke()
-                    // Dikey kesik çizgiler
-                    ctx.beginPath()
-                    ctx.moveTo(width / 2, height / 2 - aimCursor.aimCursorRadius / 2)
-                    ctx.lineTo(width / 2, height / 2 + aimCursor.aimCursorRadius / 2)
-                    ctx.stroke()
-                    // Yatay kesik çizgiler
-                    ctx.beginPath()
-                    ctx.moveTo(width / 2 - aimCursor.aimCursorRadius / 2, height / 2)
-                    ctx.lineTo(width / 2 + aimCursor.aimCursorRadius / 2, height / 2)
-                    ctx.stroke()
+                id: attitudeIndicator
+                anchors {
+                    verticalCenter: parent.verticalCenter
+                    horizontalCenter: parent.horizontalCenter
                 }
-            }
-        }
+                width: parent.width
+                height: parent.height * 0.8
+
+                // Nişangah (Merkezde) with dynamic color
+                Item {
+                    id: aimCursor
+                    anchors.centerIn: parent
+                    width: parent.width * 0.2
+                    height: parent.width * 0.2
+                    readonly property int aimCursorRadius: width * 0.2
+
+                    Canvas {
+                        id: aimCursorCanvas
+                        anchors.fill: parent
+                        onPaint: {
+                            var ctx = getContext("2d")
+                            ctx.reset()
+                            ctx.strokeStyle = root.rollColor
+                            ctx.lineWidth = 1
+                            ctx.beginPath()
+                            ctx.setLineDash([5, 5])
+                            ctx.arc(width / 2, height / 2, aimCursor.aimCursorRadius, 0, 2 * Math.PI)
+                            ctx.stroke()
+                            ctx.beginPath()
+                            ctx.moveTo(width / 2, height / 2 - aimCursor.aimCursorRadius / 2)
+                            ctx.lineTo(width / 2, height / 2 + aimCursor.aimCursorRadius / 2)
+                            ctx.stroke()
+                            ctx.beginPath()
+                            ctx.moveTo(width / 2 - aimCursor.aimCursorRadius / 2, height / 2)
+                            ctx.lineTo(width / 2 + aimCursor.aimCursorRadius / 2, height / 2)
+                            ctx.stroke()
+                        }
+                    }
+
+                    Connections {
+                        target: root
+                        function onRollValueChanged() {
+                            aimCursorCanvas.requestPaint()
+                        }
+                    }
+                }
 
         readonly property int lineVerticalSpacing: 40
         readonly property int lineHorizontalSpacing: 25

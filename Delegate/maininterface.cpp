@@ -196,13 +196,11 @@ void MainInterface::handleUDPConnectionSignal(bool connectionState, const QStrin
 void MainInterface::setTCPButton(bool TCP_CONNECTION_STATE){
     uiStateManager->handleConnectionState(TCP_CONNECTION_STATE, ui->Tcp_Button);
     ui->Tcp_Button->setText("TCP");
-    qDebug()<<"TCPayarlandı";
     setUI();
 }
 void MainInterface::setUDPButton(bool UDP_CONNECTION_STATE){
     uiStateManager->handleConnectionState(UDP_CONNECTION_STATE, ui->Tcp_Button);
     ui->Tcp_Button->setText("UDP");
-    qDebug()<<"UDPayarlandı";
     setUI();
 }
 void MainInterface::setUI(){
@@ -214,8 +212,8 @@ void MainInterface::setUI(){
     ui->Arm_Button->setEnabled(GlobalParams::getInstance().getConnectionState());
     ui->Motor_Button->setEnabled(GlobalParams::getInstance().getConnectionState() && GlobalParams::getInstance().getArmState());
     ui->Mode_Button->setEnabled(GlobalParams::getInstance().getConnectionState() && GlobalParams::getInstance().getArmState());
-    qDebug() <<GlobalParams::getInstance().getConnectionState();
 }
+
 void MainInterface::handleAltitudeChanged(int value) {
     emit AltitudeChanged(static_cast<float>(value));
 }

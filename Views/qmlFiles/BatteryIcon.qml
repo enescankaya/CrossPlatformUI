@@ -64,17 +64,26 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            onWheel: {
+
+            onWheel: function(event) {
+                handleWheelEvent(event);
+            }
+
+            function handleWheelEvent(wheel) {
                 if (wheel.angleDelta.y > 0) {
                     batteryStatus.batteryLevel = Math.min(batteryStatus.batteryLevel + 1, 100);
                 } else {
                     batteryStatus.batteryLevel = Math.max(batteryStatus.batteryLevel - 1, 0);
                 }
+
                 batteryStatus.charging = batteryStatus.batteryLevel > 50;
                 batteryStatus.deepCharge = batteryStatus.batteryLevel < 10;
+
                 batteryCanvas.requestPaint();
             }
         }
+
+
     }
 
     Timer {

@@ -40,6 +40,11 @@ private:
     QString getErrorMessage(QAbstractSocket::SocketError socketError);
     void startConnectionTimer();
     void stopConnectionTimer();
+    QTimer* signalCheckTimer = nullptr;
+    int signalCheckAttempts = 0;
+    static const int MAX_SIGNAL_CHECK_ATTEMPTS = 5; // 5 seconds (1 check per second)
+    static const int MIN_SIGNAL_STRENGTH = 50;
+    void checkSignalStrength();
 
     QUdpSocket* udpSocket{nullptr};
     QTimer* connectionTimer{nullptr};

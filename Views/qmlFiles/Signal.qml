@@ -89,15 +89,21 @@ Rectangle {
             }
         }
     }
-
     MouseArea {
         anchors.fill: parent
-         onWheel: {
+
+        onWheel: function(event) {
+            handleWheelEvent(event);
+        }
+
+        function handleWheelEvent(wheel) {
             if (wheel.angleDelta.y > 0) {
-                parent.signalStrength = Math.min(100, root.signalStrength + 10)
+                parent.signalStrength = Math.min(100, root.signalStrength + 10);
             } else {
-                parent.signalStrength = Math.max(0, root.signalStrength - 10)
+                parent.signalStrength = Math.max(0, root.signalStrength - 10);
             }
         }
     }
+
+
 }

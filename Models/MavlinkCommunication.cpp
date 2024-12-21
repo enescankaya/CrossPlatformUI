@@ -25,6 +25,7 @@ void MavlinkCommunication::updateMavlinkSignalStrength() {
     else { // Linear interpolation between 1000ms and MAX_HEARTBEAT_INTERVAL
         signalStrength = static_cast<int>(100 * (1.0 - (timeSinceLastHeartbeat - 1000.0) / (MAX_HEARTBEAT_INTERVAL - 1000.0)));
     }
+    GlobalParams::getInstance().setMavlinkSignalStrength(signalStrength);
     emit setMavlinkSignalValue(signalStrength);
     // Get system armed state from base_mode field
     bool isArmed = (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) != 0;
@@ -45,15 +46,11 @@ void MavlinkCommunication::updateMavlinkSignalStrength() {
     }
 
     // STATUSTEXT zamanını kontrol edin
-    if (m_lastStatusMessage.isValid() && m_lastStatusMessage.elapsed() > 3000) {
+    if (m_lastStatusMessage.isValid() && m_lastStatusMessage.elapsed() > 5000) {
         emit showWarningMessage(" ");
         m_lastStatusMessage.invalidate(); // Tekrar tetiklenmeyi önlemek için geçersiz yap
     }
-
     emit updateClock(isArmed);
-    //qDebug() << QString::number(static_cast<int>(GlobalParams::getInstance().getActiveConnectionType()));
-    //qDebug() << GlobalParams::getInstance().getConnectionState();
-
 }
 
 void MavlinkCommunication::processMAVLinkMessage(const mavlink_message_t& msg) {

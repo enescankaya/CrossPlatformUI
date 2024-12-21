@@ -112,15 +112,22 @@ Item {
 
     MouseArea {
         anchors.fill: parent
-        onWheel: {
+
+        onWheel: function(event) {
+            handleWheelEvent(event);
+        }
+
+        function handleWheelEvent(wheel) {
             if (wheel.angleDelta.y > 0) {
-                fuelStatus.fuelLevel = Math.min(fuelStatus.fuelLevel + 0.01, 1.0)
+                fuelStatus.fuelLevel = Math.min(fuelStatus.fuelLevel + 0.01, 1.0);
             } else {
-                fuelStatus.fuelLevel = Math.max(fuelStatus.fuelLevel - 0.01, 0.0)
+                fuelStatus.fuelLevel = Math.max(fuelStatus.fuelLevel - 0.01, 0.0);
             }
-            dropCanvas.requestPaint()
+            dropCanvas.requestPaint();
         }
     }
+
+
 
     Timer {
         interval: 16 // Approximately 60 FPS
