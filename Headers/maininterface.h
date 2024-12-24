@@ -39,7 +39,21 @@ class QQuickWidget;
  */
 class MainInterface : public QMainWindow {
     Q_OBJECT
+protected:
+    QPoint clickPosition;
+    void mousePressEvent(QMouseEvent *event) override {
+        if (event->button() == Qt::LeftButton) {
+            clickPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
+            event->accept();
+        }
+    }
 
+    void mouseMoveEvent(QMouseEvent *event) override {
+        if (event->buttons() & Qt::LeftButton) {
+            move(event->globalPosition().toPoint() - clickPosition);
+            event->accept();
+        }
+    }
 public:
     /**
      * @brief Constructs a MainInterface object

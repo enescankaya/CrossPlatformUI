@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
     QPixmap iconPixmap(":/Resources/icon2.png");
     QIcon icon(iconPixmap.scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation)); // 128x128 olarak ölçeklendirme
     w.setWindowIcon(icon);
+    w.setWindowFlags(Qt::FramelessWindowHint);
     w.show();
     return a.exec();
 }

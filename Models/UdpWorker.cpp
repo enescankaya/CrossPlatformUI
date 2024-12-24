@@ -86,7 +86,7 @@ void UdpWorker::handleConnect(const QString &ip, int port) {
     }
 
     startConnectionTimer();
-    emit showMessage("Connection Status", "Waiting for first MAVLink packet...", "blue", 5000);
+    emit showMessage("Connection Status", "Waiting for MAVLink Connection...", "blue", 5000);
 
     // Only bind to the local port, don't set remote endpoint yet
     if (!udpSocket->bind(QHostAddress::Any, port, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint)) {
@@ -216,7 +216,7 @@ void UdpWorker::sendMavlinkMessage(const mavlink_message_t& msg) {
     }
 
     if (!remoteEndpointEstablished) {
-        emit showMessage("Warning", "Remote endpoint not yet established. Waiting for first incoming packet...", "yellow", 3000);
+       // emit showMessage("Warning", "Remote endpoint not yet established. Waiting for first incoming packet...", "yellow", 3000);
         return;
     }
 
