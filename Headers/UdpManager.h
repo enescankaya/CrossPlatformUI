@@ -1,19 +1,20 @@
 #ifndef UDPMANAGER_H
 #define UDPMANAGER_H
 
-#include "Library/Mavlink2/mavlink_types.h"
 #include <QObject>
 #include <QThread>
 #include <QAtomicInteger>
+#include "Library/Mavlink2/mavlink_types.h"
 
 class UdpWorker;
 
 class UdpManager : public QObject {
     Q_OBJECT
-
 public:
     explicit UdpManager(QObject *parent = nullptr);
     ~UdpManager();
+
+    // Main connection interface
     void requestConnection(bool connect, const QString &ip = QString(), int port = 0);
 
 signals:

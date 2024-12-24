@@ -1,4 +1,3 @@
-// TcpManager.h
 #ifndef TCPMANAGER_H
 #define TCPMANAGER_H
 

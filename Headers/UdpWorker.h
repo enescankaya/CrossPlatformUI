@@ -17,6 +17,7 @@ public:
     explicit UdpWorker(QObject *parent = nullptr);
     ~UdpWorker();
     void ReadData();
+    void cleanup();
 
 public slots:
     void initialize();
@@ -36,7 +37,6 @@ private slots:
     void handleConnectionTimeout();
 
 private:
-    void cleanup();
     QString getErrorMessage(QAbstractSocket::SocketError socketError);
     void startConnectionTimer();
     void stopConnectionTimer();
@@ -55,6 +55,12 @@ private:
     mavlink_status_t status = {};
     QHostAddress remoteAddress;
     quint16 remotePort{0};
+    QHostAddress bindAddress;
+    quint16 bindPort;
+    uint8_t m_sendBuffer[MAVLINK_MAX_PACKET_LEN];
+    bool remoteEndpointEstablished = false;
+
+
 };
 
 #endif // UDPWORKER_H

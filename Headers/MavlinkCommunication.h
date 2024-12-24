@@ -55,6 +55,7 @@ private:
     QElapsedTimer m_lastStatusMessage; // Son STATUSTEXT mesajını takip eder.
     static constexpr int MAX_HEARTBEAT_INTERVAL = 3000; // 3 seconds maximum interval
     void updateMavlinkSignalStrength();
+    void sendHeartbeat();
     std::atomic<bool> m_isArmed=true;
 
     GlobalParams::Mode convertMavlinkMode(uint32_t custom_mode);

@@ -6,13 +6,18 @@ MavlinkCommunication::MavlinkCommunication(QObject *parent):
     QObject(parent)
 {
     m_lastHeartbeat.start();
-
     // timer to continuously check heartbeat status
     QTimer* signalCheckTimer = new QTimer(this);
     connect(signalCheckTimer, &QTimer::timeout, this, &MavlinkCommunication::updateMavlinkSignalStrength);
     signalCheckTimer->start(500); // Check every 500ms
 }
 void MavlinkCommunication::updateMavlinkSignalStrength() {
+    QFuture<void> future = QtConcurrent::run([=]() {
+        static bool sendHeartBeat = false;
+        sendHeartBeat = !sendHeartBeat;
+        if (sendHeartBeat) {
+            sendHeartbeat();  // Heartbeat gönder
+        }
     qint64 timeSinceLastHeartbeat = m_lastHeartbeat.elapsed();
 
     // Calculate signal strength (0-100)
@@ -51,7 +56,26 @@ void MavlinkCommunication::updateMavlinkSignalStrength() {
         m_lastStatusMessage.invalidate(); // Tekrar tetiklenmeyi önlemek için geçersiz yap
     }
     emit updateClock(isArmed);
+    });
+
 }
+void MavlinkCommunication::sendHeartbeat() {
+    if (GlobalParams::getInstance().getConnectionState() == true) {
+        mavlink_message_t msg;
+        mavlink_heartbeat_t hb;
+
+        hb.type = MAV_TYPE_GCS; // Yer kontrol istasyonu
+        hb.autopilot = MAV_AUTOPILOT_INVALID; // GCS için
+        hb.base_mode = MAV_MODE_FLAG_CUSTOM_MODE_ENABLED; // Özel mod aktif
+        hb.custom_mode = 0; // Özel mod için varsayılan değer
+        hb.system_status = MAV_STATE_ACTIVE; // Sistem aktif
+        hb.mavlink_version = 3; // MAVLink 2.0
+
+        mavlink_msg_heartbeat_encode(255, 190, &msg, &hb);
+        emit sendMessage(msg);  // Mesaj gönderimi
+    }
+}
+
 
 void MavlinkCommunication::processMAVLinkMessage(const mavlink_message_t& msg) {
     QFuture<void> future = QtConcurrent::run([&msg, this]() {
@@ -165,7 +189,7 @@ void MavlinkCommunication::disArm(){
     QFuture<void> future = QtConcurrent::run([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
-        mavlink_msg_command_long_pack(MAV_TYPE_GCS, MAV_AUTOPILOT_GENERIC, &msg, 1, 1, MAV_CMD_COMPONENT_ARM_DISARM, 1, 0, 21196, 0, 0, 0, 0, 0);
+        mavlink_msg_command_long_pack(255, 190, &msg, 1, 1, MAV_CMD_COMPONENT_ARM_DISARM, 1, 0, 21196, 0, 0, 0, 0, 0);
         emit sendMessage(msg);
     } else {
         emit GlobalParams::getInstance().showMessage("Not Connected", "Please connect to the server first.","",2000);
@@ -176,7 +200,7 @@ void MavlinkCommunication::Arm(){
     QFuture<void> future = QtConcurrent::run([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
-        mavlink_msg_command_long_pack(MAV_TYPE_GCS, MAV_AUTOPILOT_GENERIC, &msg, 1, 1, MAV_CMD_COMPONENT_ARM_DISARM, 1, 1, 2989, 0, 0, 0, 0, 0);
+        mavlink_msg_command_long_pack(255, 190, &msg, 1, 1, MAV_CMD_COMPONENT_ARM_DISARM, 1, 1, 2989, 0, 0, 0, 0, 0);
         emit sendMessage(msg);
     }
     });
@@ -185,7 +209,7 @@ void MavlinkCommunication::changeMode(GlobalParams::Mode currentMode) {
     QFuture<void> future = QtConcurrent::run([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
     mavlink_message_t msg;
-    mavlink_msg_command_long_pack(MAV_TYPE_GCS, MAV_AUTOPILOT_GENERIC, &msg,
+    mavlink_msg_command_long_pack(255, 190, &msg,
                                   1, 1, // Target system and component
                                   MAV_CMD_DO_SET_MODE, 0, // Command and confirmation
                                   217, // Custom mode (arbitrary value)
@@ -215,8 +239,8 @@ void MavlinkCommunication::SetAltitude(float altitude) {
                         POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE;
 
         mavlink_msg_set_position_target_global_int_pack(
-            MAV_TYPE_GCS,           // Sender system type
-            MAV_AUTOPILOT_GENERIC,  // Sender autopilot type
+            255,           // Sender system type
+            190,  // Sender autopilot type
             &msg,
             0,                      // Time boot ms
             1,                      // Target system
@@ -250,7 +274,7 @@ void MavlinkCommunication::Go_Coordinate(double lat, double lng) {
         mavlink_message_t msg;
 
         mavlink_msg_mission_item_int_pack(
-            MAV_TYPE_GCS, MAV_AUTOPILOT_GENERIC, &msg,
+            255, 190, &msg,
             1,  // System ID
             1,  // Component ID
             0,  // Sequence (you may want to adjust this if you're sending multiple waypoints)
@@ -272,7 +296,7 @@ void MavlinkCommunication::Remove_Coordinate() {
     QFuture<void> future = QtConcurrent::run([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
-        mavlink_msg_command_long_pack(MAV_TYPE_GCS, MAV_AUTOPILOT_GENERIC, &msg, 1, 1,
+        mavlink_msg_command_long_pack(255, 190, &msg, 1, 1,
                                       MAV_CMD_DO_SET_MODE, 0, 217, static_cast<int>(GlobalParams::Mode::Circle), 0, 0, 0, 0, 0);//12=> loiter mode
         emit sendMessage(msg);
     }

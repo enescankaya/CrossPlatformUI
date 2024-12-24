@@ -129,7 +129,7 @@ void ConnectionManager::setUpConnections_For_Connections(MainInterface* mainInte
         disconnect(udpManager,&UdpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage);
         disconnect(mavlink_Class,&MavlinkCommunication::sendMessage,udpManager,&UdpManager::sendMavlinkMessage);
          //TCP Connections
-        connect(mainInterface, &MainInterface::TCP_Connection_State,tcpManager, &TcpManager::requestConnection);
+        connect(mainInterface,&MainInterface::TCP_Connection_State,tcpManager, &TcpManager::requestConnection);
         connect(tcpManager, &TcpManager::showMessage,mainInterface, &MainInterface::showMessage);
         connect(tcpManager, &TcpManager::connectionStateChanged,mainInterface, &MainInterface::updateConnectionState);
         connect(tcpManager,&TcpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage,Qt::QueuedConnection);
@@ -145,7 +145,7 @@ void ConnectionManager::setUpConnections_For_Connections(MainInterface* mainInte
         disconnect(tcpManager, &TcpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage);
         disconnect(mavlink_Class, &MavlinkCommunication::sendMessage,tcpManager,&TcpManager::sendMavlinkMessage);
          //UDP Connections
-        connect(mainInterface, &MainInterface::UDP_Connection_State,udpManager, &UdpManager::requestConnection);
+        connect(mainInterface,&MainInterface::UDP_Connection_State,udpManager, &UdpManager::requestConnection);
         connect(udpManager, &UdpManager::showMessage,mainInterface, &MainInterface::showMessage);
         connect(udpManager, &UdpManager::connectionStateChanged,mainInterface, &MainInterface::updateConnectionState);
         connect(udpManager,&UdpManager::processMAVLinkMessage,mavlink_Class,&MavlinkCommunication::processMAVLinkMessage,Qt::QueuedConnection);

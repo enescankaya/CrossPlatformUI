@@ -37,21 +37,24 @@ void UdpWorker::initialize() {
 
 void UdpWorker::checkSignalStrength() {
     auto &globals = GlobalParams::getInstance();
-    int currentSignalStrength = globals.getMavlinkSignalStrength();
-
     signalCheckAttempts++;
 
-    if (currentSignalStrength >= MIN_SIGNAL_STRENGTH) {
-        // Signal strength is good, stop checking
-        signalCheckTimer->stop();
-        signalCheckAttempts = 0;
-        emit showMessage("Connection Status", "Connection established successfully", "green", 3000);
-    } else if (signalCheckAttempts >= MAX_SIGNAL_CHECK_ATTEMPTS) {
-        // Signal strength remained low for 5 seconds
-        signalCheckTimer->stop();
-        signalCheckAttempts = 0;
-        handleDisconnect();
-        emit showMessage("Connection Error", "No MAVLink signal", "red", 3000);
+    // 5 saniye içinde (5 deneme x 1 saniye interval) heartbeat gelmezse bağlantıyı kes
+    if (signalCheckAttempts >= MAX_SIGNAL_CHECK_ATTEMPTS) {
+        if (globals.getMavlinkSignalStrength() > MIN_SIGNAL_STRENGTH) {
+            // Signal strength is good, stop checking
+            signalCheckTimer->stop();
+            signalCheckAttempts = 0;
+            emit showMessage("Connection Status", "Connection established successfully", "green", 3000);
+            emit connectionStateChanged(true);
+        } else {
+            // 5 saniye boyunca heartbeat gelmedi
+            signalCheckTimer->stop();
+            signalCheckAttempts = 0;
+            handleDisconnect();
+            emit showMessage("Connection Error", "No Mavlink Connection", "red", 3000);
+            emit connectionStateChanged(false);
+        }
     }
 }
 void UdpWorker::startConnectionTimer() {
@@ -66,40 +69,42 @@ void UdpWorker::stopConnectionTimer() {
     }
 }
 
+
 void UdpWorker::handleConnect(const QString &ip, int port) {
+    Q_UNUSED(ip);
     QMutexLocker locker(&mutex);
     auto &globals = GlobalParams::getInstance();
 
+    if (port <= 0 || port > 65535) {
+        stopConnectionTimer();
+        emit showMessage("Error", "Invalid port number", "red", 3000);
+        return;
+    }
+
     if (udpSocket->state() == QAbstractSocket::BoundState) {
-        if (globals.getUdpIp() == ip && globals.getUdpPort() == port) {
-            emit showMessage("Connection Status", "Already connected to this address", "blue", 3000);
-            return;
-        }
         handleDisconnect();
     }
 
     startConnectionTimer();
-    emit showMessage("Connection Status", "Attempting connection...", "blue", 5000);
+    emit showMessage("Connection Status", "Waiting for first MAVLink packet...", "blue", 5000);
 
-    remoteAddress = QHostAddress(ip);
-    remotePort = port;
-
-    if (udpSocket->bind(QHostAddress::Any, port)) {
-        stopConnectionTimer();
-        globals.setUdpIp(ip);
-        globals.setUdpPort(port);
-        globals.setUdpConnectionState(true);
-        emit connectionStateChanged(true);
-        GlobalParams::getInstance().setActiveConnectionType(GlobalParams::ConnectionType::UDP);
-
-        // Start monitoring signal strength
-        signalCheckAttempts = 0;
-        signalCheckTimer->start();
-    } else {
-        stopConnectionTimer();
-        emit showMessage("Error", "Connection failed", "red", 3000);
+    // Only bind to the local port, don't set remote endpoint yet
+    if (!udpSocket->bind(QHostAddress::Any, port, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint)) {
+        emit showMessage("Error", "Failed to bind UDP socket", "red", 3000);
+        return;
     }
+
+    bindPort = port;
+    remoteEndpointEstablished = false; // Reset remote endpoint flag
+
+    globals.setUdpPort(port);
+    globals.setUdpConnectionState(true);
+    GlobalParams::getInstance().setActiveConnectionType(GlobalParams::ConnectionType::UDP);
+
+    signalCheckAttempts = 0;
+    signalCheckTimer->start();
 }
+
 
 void UdpWorker::handleDisconnect() {
     QMutexLocker locker(&mutex);
@@ -180,45 +185,64 @@ void UdpWorker::ReadData() {
 
         udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
-        // Sadece beklenen adresten gelen paketleri işle
-            for (int i = 0; i < datagram.size(); i++) {
-                if (mavlink_parse_char(MAVLINK_COMM_0, static_cast<uint8_t>(datagram[i]), &msg, &status)) {
-                    emit processMAVLinkMessage(msg);                }
+        // If this is the first packet, establish the remote endpoint
+        if (!remoteEndpointEstablished) {
+            remoteAddress = sender;
+            remotePort = senderPort;
+            remoteEndpointEstablished = true;
+
+            auto &globals = GlobalParams::getInstance();
+            globals.setUdpIp(sender.toString());
+
+            emit showMessage("Connection Status",
+                             "Remote endpoint established: " + sender.toString() + ":" + QString::number(senderPort),
+                             "green", 3000);
+        }
+
+        // Process the MAVLink message
+        for (int i = 0; i < datagram.size(); i++) {
+            if (mavlink_parse_char(MAVLINK_COMM_0, static_cast<uint8_t>(datagram[i]), &msg, &status)) {
+                emit processMAVLinkMessage(msg);
             }
+        }
     }
 }
-
 void UdpWorker::sendMavlinkMessage(const mavlink_message_t& msg) {
-    if (!udpSocket) {
-        emit showMessage("Error", "UDP socket is null!", "red", 3000);
+    QMutexLocker locker(&mutex);
+
+    if (!udpSocket || udpSocket->state() != QAbstractSocket::BoundState) {
+        emit showMessage("Error", "UDP socket not bound!", "red", 3000);
         return;
     }
 
-    if (udpSocket->state() != QAbstractSocket::BoundState) {
-        emit showMessage("Error", QString("Socket not bound! Current state: %1").arg(udpSocket->state()), "red", 3000);
+    if (!remoteEndpointEstablished) {
+        emit showMessage("Warning", "Remote endpoint not yet established. Waiting for first incoming packet...", "yellow", 3000);
         return;
     }
 
-    if (remoteAddress.isNull() || remotePort == 0) {
-        emit showMessage("Error", QString("Invalid remote address or port! Address: %1, Port: %2")
-                             .arg(remoteAddress.toString())
-                             .arg(remotePort), "red", 3000);
-        return;
-    }
+    uint16_t len = mavlink_msg_to_send_buffer(m_sendBuffer, &msg);
+    QByteArray datagram(reinterpret_cast<const char*>(m_sendBuffer), len);
 
-    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-    qint64 len = mavlink_msg_to_send_buffer(buffer, &msg);
-    QByteArray datagram(reinterpret_cast<const char*>(buffer), len);
-    udpSocket->writeDatagram(datagram, remoteAddress, remotePort);
+    qint64 bytesSent = udpSocket->writeDatagram(datagram, remoteAddress, remotePort);
+    if (bytesSent == -1) {
+        emit showMessage("Error", "UDP send failed: " + udpSocket->errorString(), "red", 3000);
+    }
 }
-
 
 void UdpWorker::cleanup() {
-    stopConnectionTimer();
+    if (connectionTimer) {
+        connectionTimer->stop();
+        delete connectionTimer;
+        connectionTimer = nullptr;
+    }
     if (signalCheckTimer) {
         signalCheckTimer->stop();
+        delete signalCheckTimer;
+        signalCheckTimer = nullptr;
     }
-    if (udpSocket && udpSocket->state() != QAbstractSocket::UnconnectedState) {
-        handleDisconnect();
+    if (udpSocket) {
+        udpSocket->close();
+        delete udpSocket;
+        udpSocket = nullptr;
     }
 }

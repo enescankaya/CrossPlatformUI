@@ -169,8 +169,6 @@ void MainInterface::handleConnectionSignal(bool connectionState, const QString &
             return;
         }
     }
-    //setTCPButton(connectionState);
-    //emit updateConnectionState(GlobalParams::getInstance().getTcpConnectionState());
 }
 void MainInterface::handleUDPConnectionSignal(bool connectionState, const QString &ip, int port) {
     GlobalParams::getInstance().setActiveConnectionType(GlobalParams::ConnectionType::UDP);
@@ -190,8 +188,6 @@ void MainInterface::handleUDPConnectionSignal(bool connectionState, const QStrin
             return;
         }
     }
-    //setUDPButton(connectionState);
-    //emit updateConnectionState(GlobalParams::getInstance().getUdpConnectionState());
 }
 void MainInterface::setTCPButton(bool TCP_CONNECTION_STATE){
     uiStateManager->handleConnectionState(TCP_CONNECTION_STATE, ui->Tcp_Button);
@@ -227,7 +223,7 @@ void MainInterface::handleErrorDismissed() {
 
 // Button click handlers
 void MainInterface::on_Mode_Button_clicked() {
-    handleButtonClick(ui->change_Mode);//hello
+    handleButtonClick(ui->change_Mode);
 }
 
 void MainInterface::on_Tcp_Button_clicked() {

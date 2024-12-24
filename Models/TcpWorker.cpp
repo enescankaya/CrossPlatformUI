@@ -171,4 +171,6 @@ void TcpWorker::sendMavlinkMessage(const mavlink_message_t& msg) {
     uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
     tcpSocket->write(reinterpret_cast<const char*>(buffer), len);
     tcpSocket->flush();
+    qDebug() << "Sent" << buffer
+             << "msgid:" << msg.msgid;
 }

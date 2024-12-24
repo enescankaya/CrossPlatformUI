@@ -1,8 +1,7 @@
-#include "Headers/UdpManager.h"
-#include "Headers/UdpWorker.h"
+#include "UdpManager.h"
+#include "UdpWorker.h"
 
-UdpManager::UdpManager(QObject *parent)
-    : QObject(parent) {
+UdpManager::UdpManager(QObject *parent) : QObject(parent) {
     initializeWorker();
 }
 
@@ -15,16 +14,14 @@ void UdpManager::initializeWorker() {
     worker = new UdpWorker();
     worker->moveToThread(workerThread);
 
-    connect(workerThread, &QThread::started,
-            worker, &UdpWorker::initialize);
-
+    // Connect signals/slots
+    connect(workerThread, &QThread::started, worker, &UdpWorker::initialize);
     connect(worker, &UdpWorker::connectionStateChanged,
             this, &UdpManager::connectionStateChanged, Qt::QueuedConnection);
     connect(worker, &UdpWorker::showMessage,
             this, &UdpManager::showMessage, Qt::QueuedConnection);
     connect(worker, &UdpWorker::processMAVLinkMessage,
             this, &UdpManager::processMAVLinkMessage, Qt::QueuedConnection);
-
     connect(this, &UdpManager::connectRequested,
             worker, &UdpWorker::handleConnect, Qt::QueuedConnection);
     connect(this, &UdpManager::disconnectRequested,
@@ -36,14 +33,18 @@ void UdpManager::initializeWorker() {
 }
 
 void UdpManager::cleanupWorker() {
-    if (workerThread) {
+    if (workerThread && worker) {
+        worker->cleanup();
         workerThread->quit();
-        workerThread->wait();
-        if (worker) {
-            delete worker;                 // Hemen sil deletelater zamana bağlı olarak siler sonra da olabiri.
-            worker = nullptr;
+
+        if (!workerThread->wait(3000)) {
+            workerThread->terminate();
+            workerThread->wait();
         }
+
+        delete worker;
         delete workerThread;
+        worker = nullptr;
         workerThread = nullptr;
     }
 }
@@ -65,7 +66,8 @@ void UdpManager::requestConnection(bool connect, const QString &ip, int port) {
     }
     catch (const std::exception &ex) {
         emit showMessage("System Error",
-                         QString("Connection error: %1").arg(ex.what()), "red", 5000);
+                         QString("Connection error: %1").arg(ex.what()),
+                         "red", 5000);
     }
 
     isProcessing.storeRelease(false);
