@@ -54,7 +54,23 @@ Bu uygulama, TCP ve UDP üzerinden MAVLink protokolü kullanarak hava aracı ile
      - **Not**: Tile'larda sadece görüntü dosyalarını ekleyin, alt klasörler bulunmamalıdır.
 
 ---
+## SITL UDP/TCP Bağlantısı için
 
+SITL (Software In The Loop) bağlantısı kurmak için aşağıdaki adımları takip edebilirsiniz. Bu işlem için bir `.bat` dosyası kullanabilirsiniz. Aşağıdaki komutları `.bat` dosyanıza ekleyin ve çalıştırın:
+
+1. **SITL Bağlantısı için Bat Dosyası**:
+   
+   ```bat
+   cd C:\Users\PC_6270\Documents\Mission Planner\sitl
+   Arduplane.exe -M plane --speedup 8 --home 40.7872,26.6068,0,0 --serial0=udpclient:127.0.0.1:14550
+
+*Yukarıdaki kodu, sisteminizde yüklü olan Mission Planner SITL yoluna göre değiştirin*.
+'14550' portunu ihtiyacınıza göre değiştirebilirsiniz (sistem portları dışında bir port seçebilirsiniz).
+**Port Bağlantısı:**
+*Bu komut çalıştırıldığında, udpclient üzerinden belirttiğiniz port ile bağlantı sağlanır.
+*Uygulamanızda, arayüzden bu açılan portu kullanarak bağlantıyı gerçekleştirebilirsiniz.
+
+---
 ## Kullanım
 
 - **Uygulama Başlatma**: Uygulama başlatıldığında, MAVLink üzerinden hava aracıyla iletişim kurarak temel komutları gönderebilirsiniz. 
