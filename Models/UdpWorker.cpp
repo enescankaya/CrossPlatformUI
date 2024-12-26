@@ -216,7 +216,6 @@ void UdpWorker::sendMavlinkMessage(const mavlink_message_t& msg) {
     }
 
     if (!remoteEndpointEstablished) {
-       // emit showMessage("Warning", "Remote endpoint not yet established. Waiting for first incoming packet...", "yellow", 3000);
         return;
     }
 

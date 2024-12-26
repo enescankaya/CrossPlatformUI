@@ -68,6 +68,11 @@ private:
     static const uint32_t RTL_MODE = 11;
 
     mavlink_heartbeat_t heartbeat;
+    QThreadPool *m_threadPool;
+    QTimer m_signalCheckTimer;
+    QTimer m_throttleTimer;
+    std::atomic<bool> m_isThrottleActive;
+    void sendThrottleCommand();
 
 signals:
 

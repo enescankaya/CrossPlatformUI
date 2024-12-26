@@ -29,6 +29,15 @@ public:
         QWriteLocker lock(&m_lock);
         m_Mavlink_Signal_Strength = value;
     }
+    QString getTilePath() const {
+        QReadLocker lock(&m_lock);
+        return TilePath;
+    }
+
+    void setTilePath(QString value) {
+        QWriteLocker lock(&m_lock);
+        TilePath = value;
+    }
 
     ConnectionType getActiveConnectionType() const {
         QReadLocker lock(&m_lock);
@@ -295,6 +304,7 @@ private:
     QString m_UDP_Current_ip;
     ConnectionType m_activeConnectionType{ConnectionType::None};
     int m_Mavlink_Signal_Strength=0;
+    QString TilePath;
 };
 
 #endif // GLOBALPARAMS_H

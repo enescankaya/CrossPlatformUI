@@ -8,8 +8,8 @@
 MainInterface::MainInterface(QWidget *parent)
     : QMainWindow(parent)
     , ui(std::make_unique<Ui::BAYKARHP>())
-    , currentImageIndex(6),
-    process(new QProcess(this))
+    , currentImageIndex(6)
+    //process(new QProcess(this))
     {
 
     ui->setupUi(this);

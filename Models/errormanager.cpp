@@ -34,7 +34,7 @@ void ErrorManager::handleDismissal() {
 
 void ErrorManager::processQueue() {
     // QtConcurrent ile arka planda kuyruk işlemesini gerçekleştirir
-    QFuture<void> future = QtConcurrent::run([this]() {
+    // QFuture<void> future = QtConcurrent::run([this]() {
 
         if (errorQueue.empty()) return; // Kuyruk boşsa çık
         // Tüm panellerin boş olup olmadığını kontrol et
@@ -58,5 +58,5 @@ void ErrorManager::processQueue() {
 
         // Sıradaki panel indeksini güncelle
         currentPanelIndex = index;
-    });
+    // });
 }

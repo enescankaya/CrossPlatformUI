@@ -5,14 +5,27 @@
 MavlinkCommunication::MavlinkCommunication(QObject *parent):
     QObject(parent)
 {
-    m_lastHeartbeat.start();
-    // timer to continuously check heartbeat status
-    QTimer* signalCheckTimer = new QTimer(this);
-    connect(signalCheckTimer, &QTimer::timeout, this, &MavlinkCommunication::updateMavlinkSignalStrength);
-    signalCheckTimer->start(500); // Check every 500ms
+    m_threadPool = new QThreadPool(this);
+    m_threadPool->setMaxThreadCount(QThread::idealThreadCount());
+    // Timer kurulumu
+    m_signalCheckTimer.setInterval(500);
+    connect(&m_signalCheckTimer, &QTimer::timeout, this, [this]() {
+        m_threadPool->start([this]() {
+            updateMavlinkSignalStrength();
+        });
+    });
+    m_signalCheckTimer.start();
+
+    // Throttle timer kurulumu
+    m_throttleTimer.setInterval(100);
+    connect(&m_throttleTimer, &QTimer::timeout, this, [this]() {
+        if (m_isThrottleActive) {
+            sendThrottleCommand();
+        }
+    });
 }
 void MavlinkCommunication::updateMavlinkSignalStrength() {
-    QFuture<void> future = QtConcurrent::run([=]() {
+    m_threadPool->start([=]() {
         static bool sendHeartBeat = false;
         sendHeartBeat = !sendHeartBeat;
         if (sendHeartBeat) {
@@ -78,7 +91,7 @@ void MavlinkCommunication::sendHeartbeat() {
 
 
 void MavlinkCommunication::processMAVLinkMessage(const mavlink_message_t& msg) {
-    QFuture<void> future = QtConcurrent::run([&msg, this]() {
+    m_threadPool->start([&msg, this]() {
         switch (msg.msgid) {
         case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
             handleGlobalPosition(msg);
@@ -186,7 +199,7 @@ void MavlinkCommunication::handleAttitude(const mavlink_message_t& msg) {
     emit updateHUD(GlobalParams::getInstance().getVerticalSpeed(),GlobalParams::getInstance().getAltitude(),attitude.pitch * 180 / M_PI,attitude.roll * 180 / M_PI);
 }
 void MavlinkCommunication::disArm(){
-    QFuture<void> future = QtConcurrent::run([=]() {
+    m_threadPool->start([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
         mavlink_msg_command_long_pack(255, 190, &msg, 1, 1, MAV_CMD_COMPONENT_ARM_DISARM, 1, 0, 21196, 0, 0, 0, 0, 0);
@@ -197,7 +210,7 @@ void MavlinkCommunication::disArm(){
     });
 }
 void MavlinkCommunication::Arm(){
-    QFuture<void> future = QtConcurrent::run([=]() {
+    m_threadPool->start([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
         mavlink_msg_command_long_pack(255, 190, &msg, 1, 1, MAV_CMD_COMPONENT_ARM_DISARM, 1, 1, 2989, 0, 0, 0, 0, 0);
@@ -206,7 +219,7 @@ void MavlinkCommunication::Arm(){
     });
 }
 void MavlinkCommunication::changeMode(GlobalParams::Mode currentMode) {
-    QFuture<void> future = QtConcurrent::run([=]() {
+    m_threadPool->start([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
     mavlink_message_t msg;
     mavlink_msg_command_long_pack(255, 190, &msg,
@@ -222,7 +235,7 @@ void MavlinkCommunication::changeMode(GlobalParams::Mode currentMode) {
 }
 void MavlinkCommunication::SetAltitude(float altitude) {
     GlobalParams::getInstance().setAltitude(altitude);
-    QFuture<void> future = QtConcurrent::run([=]() {
+    m_threadPool->start([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
 
@@ -265,7 +278,7 @@ void MavlinkCommunication::SetAltitude(float altitude) {
     });
 }
 void MavlinkCommunication::Go_Coordinate(double lat, double lng) {
-    QFuture<void> future = QtConcurrent::run([=]() {
+    m_threadPool->start([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
     // Convert latitude and longitude to MAVLink's expected format
     int32_t lat_mav = static_cast<int32_t>(lat * 1e7);
@@ -293,7 +306,7 @@ void MavlinkCommunication::Go_Coordinate(double lat, double lng) {
     });
 }
 void MavlinkCommunication::Remove_Coordinate() {
-    QFuture<void> future = QtConcurrent::run([=]() {
+    m_threadPool->start([=]() {
     if (GlobalParams::getInstance().getConnectionState() == true) {
         mavlink_message_t msg;
         mavlink_msg_command_long_pack(255, 190, &msg, 1, 1,
@@ -302,49 +315,46 @@ void MavlinkCommunication::Remove_Coordinate() {
     }
     });
 }
-// throttlePercent: 0-100 arasında bir değer
 void MavlinkCommunication::SetThrottle(double throttlePercent) {
     GlobalParams::getInstance().setThrottleValue(static_cast<float>(throttlePercent));
-    QFuture<void> future = QtConcurrent::run([=]() {
-    if (GlobalParams::getInstance().getConnectionState() == true) {
-        while(GlobalParams::getInstance().getCurrentMode() == GlobalParams::Mode::Manual && GlobalParams::getInstance().getConnectionState()) {
-            // Yüzdelik değeri PWM değerine çevirme (1000-2000 PWM aralığı)
-            uint16_t pwmValue = static_cast<uint16_t>(1000 + (static_cast<float>(GlobalParams::getInstance().getThrottleValue()) * 10));
-            // PWM değerini sınırla
-            pwmValue = std::min(std::max(pwmValue, static_cast<uint16_t>(1000)), static_cast<uint16_t>(2000));
-            mavlink_message_t msg;
 
-            mavlink_msg_rc_channels_override_pack(
-                255,           // Sender system type
-                190,           // Sender autopilot type
-                &msg,
-                1,             // Target system
-                1,             // Target component
-                UINT16_MAX,    // RC Channel 1 (Roll) - ignore
-                UINT16_MAX,    // RC Channel 2 (Pitch) - ignore
-                pwmValue,      // RC Channel 3 (Throttle)
-                UINT16_MAX,    // RC Channel 4 (Yaw) - ignore
-                UINT16_MAX,    // RC Channel 5 - ignore
-                UINT16_MAX,    // RC Channel 6 - ignore
-                UINT16_MAX,    // RC Channel 7 - ignore
-                UINT16_MAX,    // RC Channel 8 - ignore
-                UINT16_MAX,    // RC Channel 9 - ignore
-                UINT16_MAX,    // RC Channel 10 - ignore
-                UINT16_MAX,    // RC Channel 11 - ignore
-                UINT16_MAX,    // RC Channel 12 - ignore
-                UINT16_MAX,    // RC Channel 13 - ignore
-                UINT16_MAX,    // RC Channel 14 - ignore
-                UINT16_MAX,    // RC Channel 15 - ignore
-                UINT16_MAX,    // RC Channel 16 - ignore
-                UINT16_MAX,    // RC Channel 17 - ignore
-                0              // Sign/Flags field for MAVLink 2
-                );
-            emit sendMessage(msg);
-
-            // 10 HZ FREKANS(MISSION PLANNER ILE ESITLENDI)
-            QThread::msleep(100);
-        }
+    if (GlobalParams::getInstance().getConnectionState() &&
+        GlobalParams::getInstance().getCurrentMode() == GlobalParams::Mode::Manual) {
+        m_isThrottleActive = true;
+        m_throttleTimer.start();
     }
-    });
 }
-MavlinkCommunication::~MavlinkCommunication() = default;
+
+void MavlinkCommunication::sendThrottleCommand() {
+    if (!GlobalParams::getInstance().getConnectionState() ||
+        GlobalParams::getInstance().getCurrentMode() != GlobalParams::Mode::Manual) {
+        m_isThrottleActive = false;
+        m_throttleTimer.stop();
+        return;
+    }
+
+    uint16_t pwmValue = static_cast<uint16_t>(1000 + (static_cast<float>(GlobalParams::getInstance().getThrottleValue()) * 10));
+    pwmValue = std::min(std::max(pwmValue, static_cast<uint16_t>(1000)), static_cast<uint16_t>(2000));
+
+    mavlink_message_t msg;
+    mavlink_msg_rc_channels_override_pack(
+        255, 190, &msg,
+        1, 1,
+        UINT16_MAX, UINT16_MAX,
+        pwmValue,
+        UINT16_MAX, UINT16_MAX, UINT16_MAX,
+        UINT16_MAX, UINT16_MAX, UINT16_MAX,
+        UINT16_MAX, UINT16_MAX, UINT16_MAX,
+        UINT16_MAX, UINT16_MAX, UINT16_MAX,
+        UINT16_MAX, UINT16_MAX, 0
+        );
+
+    emit sendMessage(msg);
+}
+
+MavlinkCommunication::~MavlinkCommunication() {
+    m_isThrottleActive = false;
+    m_signalCheckTimer.stop();
+    m_throttleTimer.stop();
+    m_threadPool->waitForDone();
+}
