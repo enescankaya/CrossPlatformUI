@@ -14,3 +14,9 @@ daha sonra exemizi çalıştırabiliriz.
 (Android için denenmedi)
 
 video: https://www.youtube.com/watch?v=rFHPOZoqzcg
+
+
+-Uygulama Klasöründe oluşan Tile klasörüne Dışarıdan  OFFLİNE kullanım için tile yükleyebilirsiniz.
+-Bunu yapabilmek için öncelikle tile ları OSM formatına çevirmeniz gerekmektedir.
+-OSM FORMATINA çevirmek için harici yazmış olduğum https://github.com/enescankaya/Tile-Converter-from-BingSattelite-to-the-OSM.git kullanabilirsiniz.
+-tile ları OSM formatına çevirdikten sonra uygulama içerisinde bulunan tiles klasörüne görüntüleri uygun formatta ekleyin(sadece görüntü olacak alt_dir yok)
