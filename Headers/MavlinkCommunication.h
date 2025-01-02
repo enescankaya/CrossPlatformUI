@@ -31,6 +31,7 @@ signals:
     void updateHUD(QVariant newAirspeed, QVariant newAltitude, QVariant newPitch, QVariant newRoll);
     void updateInfoHud(uint16_t throttle,float airspeed,float groundspeed,int32_t rpm_value);
     void setFuelValue(QVariant value);
+    void setFuelRoll(QVariant value);
     void setBatteryLevel(QVariant level);
     void setSignalStrength(QVariant strength);
     void setArmState(QVariant state);

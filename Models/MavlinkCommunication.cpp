@@ -1,7 +1,7 @@
 #include "MavlinkCommunication.h"
 #include <QMessageBox>
 #include <QMutexLocker>
-
+#include <algorithm> // std::clamp için gerekli
 MavlinkCommunication::MavlinkCommunication(QObject *parent):
     QObject(parent)
 {
@@ -159,7 +159,7 @@ void MavlinkCommunication::handleRSSI(const mavlink_message_t& msg) {
 void MavlinkCommunication::handleFuelAndBatteryStatus(const mavlink_message_t& msg) {
     mavlink_sys_status_t sys_status;
     mavlink_msg_sys_status_decode(&msg, &sys_status);
-    emit setFuelValue(sys_status.load / 10.0f);
+    //emit setFuelValue(sys_status.load / 10.0f);
     emit setBatteryLevel(sys_status.battery_remaining);
 }
 void MavlinkCommunication::handleHeartbeat(const mavlink_message_t& msg) {
@@ -197,6 +197,9 @@ void MavlinkCommunication::handleAttitude(const mavlink_message_t& msg) {
     mavlink_attitude_t attitude;
     mavlink_msg_attitude_decode(&msg, &attitude);
     emit updateHUD(GlobalParams::getInstance().getVerticalSpeed(),GlobalParams::getInstance().getAltitude(),attitude.pitch * 180 / M_PI,attitude.roll * 180 / M_PI);
+    int rollValue = int(attitude.roll * 180 / M_PI);
+    rollValue = std::clamp(rollValue, -50, 50);
+    emit setFuelRoll(rollValue);
 }
 void MavlinkCommunication::disArm(){
     m_threadPool->start([=]() {

@@ -93,6 +93,8 @@ void ConnectionManager::setupConnections(MainInterface* mainInterface) {
     auto rootObjectFuel = mainInterface->ui->fuel_state_Widget->rootObject();
     connect(mavlink_Class, SIGNAL(setFuelValue(QVariant)),
             rootObjectFuel, SLOT(setValue(QVariant)));
+    connect(mavlink_Class, SIGNAL(setFuelRoll(QVariant)),
+            rootObjectFuel, SLOT(setRoll(QVariant)));
 
     auto rootObjectBattery = mainInterface->ui->Battery_Status_Widget->rootObject();
     connect(mavlink_Class, SIGNAL(setBatteryLevel(QVariant)),
@@ -154,3 +156,21 @@ void ConnectionManager::setUpConnections_For_Connections(MainInterface* mainInte
         return;
      }
 }
+ConnectionManager::~ConnectionManager() {
+    // Dinamik olarak oluşturulmuş nesneleri serbest bırak
+    if (tcpManager) {
+        delete tcpManager;
+        tcpManager = nullptr;
+    }
+
+    if (udpManager) {
+        delete udpManager;
+        udpManager = nullptr;
+    }
+
+    if (mavlink_Class) {
+        delete mavlink_Class;
+        mavlink_Class = nullptr;
+    }
+}
+

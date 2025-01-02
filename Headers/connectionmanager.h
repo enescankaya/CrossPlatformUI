@@ -14,6 +14,8 @@ class ConnectionManager : public QObject {
     Q_OBJECT
 public:
     explicit ConnectionManager(QObject* parent = nullptr);
+    ~ConnectionManager();
+
 
     void setupConnections(MainInterface* mainInterface);
     void setUpConnections_For_Connections(MainInterface *mainInterface);

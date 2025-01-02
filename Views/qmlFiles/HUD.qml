@@ -350,7 +350,7 @@ Rectangle {
         readonly property int aimCursorRadius: 35
         property int uppestLineValue: root.pitchValue +2
         property int upperLineValue: root.pitchValue  + 1
-        property int middleLineValue: root.pitchValue + 1 // Middle line value
+        property int middleLineValue: root.pitchValue // Middle line value
         property int lowerLineValue: root.pitchValue  - 1
         property int lowestLineValue: root.pitchValue - 2
 
