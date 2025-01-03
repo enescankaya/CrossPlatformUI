@@ -9,7 +9,6 @@ MainInterface::MainInterface(QWidget *parent)
     : QMainWindow(parent)
     , ui(std::make_unique<Ui::BAYKARHP>())
     , currentImageIndex(6)
-    //process(new QProcess(this))
     {
 
     ui->setupUi(this);
@@ -24,17 +23,6 @@ MainInterface::MainInterface(QWidget *parent)
     ui->Recording_Label->setVisible(false);
     setUI();
 }
-void MainInterface::set_SITL()
-{
-    QString batFilePath = "C:/Users/PC_6270/Desktop/Enes/QtAndroidInterfaceProject/inteface/SITL.bat";
-    process->start(batFilePath);
-    // Çalışmanın başlatıldığını kontrol et
-    if (!process->waitForStarted()) {
-        emit showError("Hata", "SITL.bat başlatılamadı!", "red", 2000);
-    } else {
-        emit showError("Bilgi", "SITL.bat başarıyla başlatıldı!", "", 2000);
-    }
-}
 
 void MainInterface::setupManagers() {
     // Initialize all managers with smart pointers
@@ -44,8 +32,6 @@ void MainInterface::setupManagers() {
     uiStateManager = std::make_unique<UIStateManager>();
     connectionManager = std::make_unique<ConnectionManager>(this);
     animationManager = std::make_unique<AnimationManager>(this);
-
-
 
     // Register widgets with widget manager
     const std::vector<QQuickWidget*> managedWidgets = {
@@ -154,9 +140,7 @@ void MainInterface::handleSecurityStateChanged(bool isArmed) {
 void MainInterface::handleConnectionSignal(bool connectionState, const QString &ip, int port) {
     GlobalParams::getInstance().setActiveConnectionType(GlobalParams::ConnectionType::TCP);
     connectionManager->setUpConnections_For_Connections(this);
-    if(port==5760){
-        //set_SITL();
-    }    // Only proceed if there's an actual state change
+    // Only proceed if there's an actual state change
     if (GlobalParams::getInstance().getTcpConnectionState() != connectionState) {
         GlobalParams::getInstance().setTcpPort(port);
         GlobalParams::getInstance().setTcpIp(ip);
@@ -173,9 +157,7 @@ void MainInterface::handleConnectionSignal(bool connectionState, const QString &
 void MainInterface::handleUDPConnectionSignal(bool connectionState, const QString &ip, int port) {
     GlobalParams::getInstance().setActiveConnectionType(GlobalParams::ConnectionType::UDP);
     connectionManager->setUpConnections_For_Connections(this);
-    if(port==5760){
-        //set_SITL();
-    }    // Only proceed if there's an actual state change
+      // Only proceed if there's an actual state change
     if (GlobalParams::getInstance().getUdpConnectionState() != connectionState) {
         GlobalParams::getInstance().setUdpPort(port);
         GlobalParams::getInstance().setUdpIp(ip);
